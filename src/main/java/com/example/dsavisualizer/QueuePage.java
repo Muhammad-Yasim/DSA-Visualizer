@@ -93,7 +93,7 @@ public class QueuePage {
         leftSide.setPadding(new Insets(60,20,0,0));
 
         Button linearQB=menuButton("Linear Queue");
-        //linearQB.setOnAction(e->showLinearQueueVisualization());
+        linearQB.setOnAction(e->showLinearQueueVisualization());
 
         Button priorityQB=menuButton("Priority Queue");
         //priorityQB.setOnAction(e->showPriorityQueueVisualization());
@@ -149,13 +149,13 @@ public class QueuePage {
 
         return button;
     }
-/*
+
     private void showLinearQueueVisualization(){
         LinearQueueVisualization linearQueueVisualization=new LinearQueueVisualization();
         Scene scene = new Scene(linearQueueVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
-
+/*
     private void showCircularQueueVisualization(){
         CircularQueueVisualization circularQueueVisualization=new CircularQueueVisualization();
         Scene scene = new Scene(circularQueueVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);

@@ -121,13 +121,13 @@ public class LandingPage {
 
 
 
-    private void showQueuePage() {
+    protected static void showQueuePage() {
         QueuePage addQueuePage = new QueuePage();
         Scene scene = new Scene(addQueuePage.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
 
-    private void showLinkedListPage(){
+    public void showLinkedListPage(){
         LinkedListPage addLinkedListPage=new LinkedListPage();
         Scene scene = new Scene(addLinkedListPage.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
