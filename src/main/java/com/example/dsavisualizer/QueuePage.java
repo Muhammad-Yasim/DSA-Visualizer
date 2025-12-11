@@ -99,7 +99,7 @@ public class QueuePage {
         //priorityQB.setOnAction(e->showPriorityQueueVisualization());
 
         Button doubleEndedCircularQB=menuButton("Double Ended Circular Queue");
-        //doubleEndedCircularQB.setOnAction(e->showDECircularQueueVisualization());
+        doubleEndedCircularQB.setOnAction(e->showDECircularQueueVisualization());
 
         leftSide.getChildren().addAll(linearQB,priorityQB,doubleEndedCircularQB);
 
@@ -110,10 +110,10 @@ public class QueuePage {
         rightSide.setPadding(new Insets(60,0,0,20));
 
         Button circularQB=menuButton("Circular Queue");
-        //circularQB.setOnAction(e->showCircularQueueVisualization());
+        circularQB.setOnAction(e->showCircularQueueVisualization());
 
         Button doubleEndedLinearQB=menuButton("Double Ended Linear Queue");
-        //doubleEndedLinearQB.setOnAction(e->showDELinearQueueVisualization());
+        doubleEndedLinearQB.setOnAction(e->showDELinearQueueVisualization());
 
         rightSide.getChildren().addAll(circularQB,doubleEndedLinearQB);
 
@@ -155,19 +155,19 @@ public class QueuePage {
         Scene scene = new Scene(linearQueueVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
-/*
+
     private void showCircularQueueVisualization(){
         CircularQueueVisualization circularQueueVisualization=new CircularQueueVisualization();
         Scene scene = new Scene(circularQueueVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
-
+/*
     private void showPriorityQueueVisualization(){
         PriorityQueueVisualization priorityQueueVisualization=new PriorityQueueVisualization();
         Scene scene = new Scene(priorityQueueVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
-
+*/
     private void showDELinearQueueVisualization(){
         DELinearQueueVisualization dELinearQueueVisualization=new DELinearQueueVisualization();
         Scene scene = new Scene(dELinearQueueVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
@@ -179,6 +179,6 @@ public class QueuePage {
         Scene scene = new Scene(dECircularQueueVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
-*/
+
     public VBox getRoot(){return root;}
 }
