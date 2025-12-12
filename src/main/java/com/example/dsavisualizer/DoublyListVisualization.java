@@ -20,45 +20,36 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LinearListVisualization {
+public class DoublyListVisualization {
 
-    private ListLinear list;
+    private ListDoubly list;
     private NodeBox[] nodeBoxes;
     private final int QUEUE_SIZE = 6;
 
     private Pane workArea;
     private HBox root;
     private TextArea console;
-
-    // control panel reference
     private VBox controlPanel;
 
-    // animation counter (replaces boolean animating)
     private int animCount = 0;
-
-    // visual constants
     private double startX = 205;
     private double startY = 290;
     private double boxWidth = 90;
     private double boxHeight = 60;
-    private double spacing = boxWidth + 50; // 120
+    private double spacing = boxWidth + 50;
 
-    // arrows
     private final List<Arrow> arrows = new ArrayList<>();
-
-    // internal head index
     private int headIndex = -1;
 
-    // head visual + binding references
     private Label headLabel;
     private DoubleBinding headXBinding = null;
     private DoubleBinding headYBinding = null;
 
-    public LinearListVisualization(){
+    public DoublyListVisualization() {
         createUI();
     }
 
-    private void createUI(){
+    private void createUI() {
         root = new HBox(20);
         root.setAlignment(Pos.TOP_RIGHT);
         root.setPadding(new Insets(30));
@@ -67,52 +58,46 @@ public class LinearListVisualization {
         VBox screen = createScreen();
         controlPanel = createControlPanel();
 
-        HBox.setHgrow(screen, javafx.scene.layout.Priority.ALWAYS);
+        HBox.setHgrow(screen, Priority.ALWAYS);
         screen.setFillWidth(true);
 
         root.getChildren().addAll(screen, controlPanel);
     }
 
-    private VBox createScreen(){
-        VBox root=new VBox();
+    private VBox createScreen() {
+        VBox root = new VBox();
         root.setStyle("-fx-background-color: #2E3A33;-fx-background-radius: 8;");
 
-        HBox header=createHeader();
-        Pane workArea=createWorkArea();
-        TextArea consoleArea=createConsole();
+        HBox header = createHeader();
+        Pane workArea = createWorkArea();
+        TextArea consoleArea = createConsole();
 
-        root.getChildren().setAll(header,workArea,consoleArea);
+        root.getChildren().setAll(header, workArea, consoleArea);
         return root;
     }
 
-    private HBox createHeader(){
-        HBox header=new HBox();
-        header.setPadding(new Insets(10,10,0,15));
+    private HBox createHeader() {
+        HBox header = new HBox();
+        header.setPadding(new Insets(10, 10, 0, 15));
 
-        Label titleLabel=new Label("Linear Linked List Visualization");
+        Label titleLabel = new Label("Doubly Linked List Visualization");
         titleLabel.setStyle("-fx-font-size: 25px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button backButton=backButton();
+        Button backButton = backButton();
 
-        header.getChildren().addAll(titleLabel,spacer,backButton);
+        header.getChildren().addAll(titleLabel, spacer, backButton);
         return header;
     }
 
-    private Button backButton(){
+    private Button backButton() {
         Button button = new Button("<- Back to menu");
         button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #95A575; -fx-font-size: 17px; -fx-cursor: hand;");
-        button.setOnMouseEntered(e->{
-            button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: white; -fx-font-size: 17px; -fx-cursor: hand;");
-        });
-
-        button.setOnMouseExited(e-> {
-            button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #95A575; -fx-font-size: 17px; -fx-cursor: hand;");
-        });
-        button.setOnAction(e-> LandingPage.showLinkedListPage() );
-
+        button.setOnMouseEntered(e -> button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: white; -fx-font-size: 17px; -fx-cursor: hand;"));
+        button.setOnMouseExited(e -> button.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #95A575; -fx-font-size: 17px; -fx-cursor: hand;"));
+        button.setOnAction(e -> LandingPage.showLinkedListPage());
         return button;
     }
 
@@ -121,10 +106,9 @@ public class LinearListVisualization {
         workArea.setPrefHeight(626);
         workArea.setPrefWidth(1204);
 
-        list = new ListLinear();
+        list = new ListDoubly();
         nodeBoxes = new NodeBox[QUEUE_SIZE];
 
-        // create nodeBoxes but DO NOT add them to workArea initially
         for (int i = 0; i < QUEUE_SIZE; i++) {
             nodeBoxes[i] = new NodeBox("null");
             nodeBoxes[i].setLayoutX(startX + i * spacing);
@@ -133,13 +117,13 @@ public class LinearListVisualization {
 
         headLabel = new Label("Head");
         headLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #FFD54F;");
-        headLabel.setVisible(false); // initially hidden
+        headLabel.setVisible(false);
         workArea.getChildren().add(headLabel);
 
         return workArea;
     }
 
-    private TextArea createConsole(){
+    private TextArea createConsole() {
         console = new TextArea();
         console.setEditable(false);
         console.setWrapText(true);
@@ -150,32 +134,31 @@ public class LinearListVisualization {
         return console;
     }
 
-    // simplified log (no front/rear)
     private void log(String msg) {
         console.appendText(msg + "\n\n");
     }
 
-    private VBox createControlPanel(){
-        VBox root=new VBox(20);
+    private VBox createControlPanel() {
+        VBox root = new VBox(20);
         root.setPrefWidth(300);
         root.setStyle("-fx-background-color: #2E3A33;-fx-background-radius: 8;");
         root.setPadding(new Insets(25));
 
-        Label titleLabel=new Label("Controls");
+        Label titleLabel = new Label("Controls");
         titleLabel.setStyle("-fx-font-size: 25px; -fx-font-weight: bold; -fx-text-fill: white;");
 
-        Label valueLabel=new Label("Value (Maximum 6 nodes can be created)");
+        Label valueLabel = new Label("Value (Maximum 6 nodes can be created)");
         valueLabel.setStyle("-fx-font-size: 15px; -fx-text-fill: #95A575;");
 
-        TextField valueEnq=new TextField();
+        TextField valueEnq = new TextField();
         valueEnq.setPromptText("e.g., 42");
         valueEnq.setPrefHeight(45);
         valueEnq.setStyle("-fx-background-color: #3D4F40;-fx-text-fill: white;-fx-font-size: 16px;");
 
-        Button insertStartButton=controlPanelButton("Insert at Start");
+        Button insertStartButton = controlPanelButton("Insert at Start");
         insertStartButton.setDefaultButton(true);
         insertStartButton.setOnAction(e -> {
-            if (animCount > 0) return; // ignore while animation running
+            if (animCount > 0) return;
             String text = valueEnq.getText();
             if (text.isEmpty()) return;
             try {
@@ -186,7 +169,7 @@ public class LinearListVisualization {
             }
         });
 
-        Button insertEndButton=controlPanelButton("Insert at End");
+        Button insertEndButton = controlPanelButton("Insert at End");
         insertEndButton.setOnAction(e -> {
             if (animCount > 0) return;
             String text = valueEnq.getText();
@@ -199,27 +182,27 @@ public class LinearListVisualization {
             }
         });
 
-        Button deleteStartButton=controlPanelButton("Delete from Start");
+        Button deleteStartButton = controlPanelButton("Delete from Start");
         deleteStartButton.setOnAction(e -> {
             if (animCount > 0) return;
             deleteFromStart();
         });
 
-        Button deleteEndButton=controlPanelButton("Delete from End");
+        Button deleteEndButton = controlPanelButton("Delete from End");
         deleteEndButton.setOnAction(e -> {
             if (animCount > 0) return;
             deleteFromEnd();
         });
 
-        Label indexLabel=new Label("Index");
+        Label indexLabel = new Label("Index");
         indexLabel.setStyle("-fx-font-size: 15px; -fx-text-fill: #95A575;");
 
-        TextField indexField=new TextField();
+        TextField indexField = new TextField();
         indexField.setPromptText("Must be less than 6");
         indexField.setPrefHeight(45);
         indexField.setStyle("-fx-background-color: #3D4F40;-fx-text-fill: white;-fx-font-size: 16px;");
 
-        Button insertMidButton=controlPanelButton("Insert at Index");
+        Button insertMidButton = controlPanelButton("Insert at Index");
         insertMidButton.setOnAction(e -> {
             if (animCount > 0) return;
             String text = valueEnq.getText();
@@ -234,7 +217,7 @@ public class LinearListVisualization {
             }
         });
 
-        Button deleteMidButton=controlPanelButton("Delete at Index");
+        Button deleteMidButton = controlPanelButton("Delete at Index");
         deleteMidButton.setOnAction(e -> {
             if (animCount > 0) return;
             String idx = indexField.getText();
@@ -247,26 +230,21 @@ public class LinearListVisualization {
             }
         });
 
-        root.getChildren().addAll(titleLabel,valueLabel,valueEnq,insertStartButton,insertEndButton,deleteStartButton,deleteEndButton,indexLabel,indexField,insertMidButton,deleteMidButton);
+        root.getChildren().addAll(titleLabel, valueLabel, valueEnq, insertStartButton, insertEndButton,
+                deleteStartButton, deleteEndButton, indexLabel, indexField, insertMidButton, deleteMidButton);
 
         return root;
     }
 
-    private Button controlPanelButton(String string){
+    private Button controlPanelButton(String string) {
         Button button = new Button(string);
         button.setPrefWidth(250);
         button.setStyle("-fx-background-color: #9FB873; -fx-border-color: transparent; -fx-text-fill: white; -fx-font-size: 15px; -fx-cursor: hand;");
-        button.setOnMouseEntered(e->{
-            button.setStyle("-fx-background-color: white; -fx-border-color: transparent; -fx-text-fill: #9FB873; -fx-font-size: 15px; -fx-cursor: hand;");
-        });
-
-        button.setOnMouseExited(e-> {
-            button.setStyle("-fx-background-color: #9FB873; -fx-border-color: transparent; -fx-text-fill: white; -fx-font-size: 15px; -fx-cursor: hand;");
-        });
+        button.setOnMouseEntered(e -> button.setStyle("-fx-background-color: white; -fx-border-color: transparent; -fx-text-fill: #9FB873; -fx-font-size: 15px; -fx-cursor: hand;"));
+        button.setOnMouseExited(e -> button.setStyle("-fx-background-color: #9FB873; -fx-border-color: transparent; -fx-text-fill: white; -fx-font-size: 15px; -fx-cursor: hand;"));
         return button;
     }
 
-    // ---------- animation coordination ----------
     private void beginAnimation() {
         animCount++;
         if (controlPanel != null) controlPanel.setDisable(true);
@@ -277,32 +255,20 @@ public class LinearListVisualization {
         if (animCount == 0 && controlPanel != null) controlPanel.setDisable(false);
     }
 
-    // ---------------- helper: head binding/animation ----------------
-
+    // ---------- HEAD logic ----------
     private void attachHeadToIndex(int idx) {
         if (idx < 0 || idx >= QUEUE_SIZE) return;
-        // remove any previous binding
         detachHeadBinding();
-
-        // ensure node present so binding works
         ensureNodePresent(idx);
-
         headLabel.setVisible(true);
 
         headXBinding = Bindings.createDoubleBinding(
-                () -> {
-                    double nbx = nodeBoxes[idx].getLayoutX() + nodeBoxes[idx].getTranslateX();
-                    double hw = headLabel.getWidth();
-                    return nbx + boxWidth / 2.0 - hw / 2.0;
-                },
+                () -> nodeBoxes[idx].getLayoutX() + nodeBoxes[idx].getTranslateX() + boxWidth / 2.0 - headLabel.getWidth() / 2.0,
                 nodeBoxes[idx].layoutXProperty(), nodeBoxes[idx].translateXProperty(), headLabel.widthProperty()
         );
 
         headYBinding = Bindings.createDoubleBinding(
-                () -> {
-                    double nby = nodeBoxes[idx].getLayoutY() + nodeBoxes[idx].getTranslateY();
-                    return nby - 30.0;
-                },
+                () -> nodeBoxes[idx].getLayoutY() + nodeBoxes[idx].getTranslateY() - 30,
                 nodeBoxes[idx].layoutYProperty(), nodeBoxes[idx].translateYProperty()
         );
 
@@ -312,47 +278,32 @@ public class LinearListVisualization {
 
     private void detachHeadBinding() {
         try {
-            if (headXBinding != null) {
-                headLabel.layoutXProperty().unbind();
-                headXBinding = null;
-            }
-        } catch (Exception ignored){}
+            if (headXBinding != null) headLabel.layoutXProperty().unbind();
+        } catch (Exception ignored) {}
         try {
-            if (headYBinding != null) {
-                headLabel.layoutYProperty().unbind();
-                headYBinding = null;
-            }
-        } catch (Exception ignored){}
+            if (headYBinding != null) headLabel.layoutYProperty().unbind();
+        } catch (Exception ignored) {}
+        headXBinding = null;
+        headYBinding = null;
     }
 
-    /**
-     * Animates the head label from its current displayed position to above nodeBoxes[index].
-     * This unbinds any previous attachment (so head keeps its current screen position as start)
-     * and after animation sets the head exactly above the destination node.
-     */
     private void animateHeadMoveToIndex(int index, Duration duration, Runnable onFinished) {
         if (index < 0 || index >= QUEUE_SIZE) {
             if (onFinished != null) onFinished.run();
             return;
         }
 
-        // ensure we have a concrete start position (if bound, unbind -> preserves current computed layout)
         detachHeadBinding();
-
-        // ensure destination node exists visually so we can compute target coords
         ensureNodePresent(index);
 
-        // compute target coords (use current layoutX/layoutY + translateX since nodes may be moving)
         double targetX = nodeBoxes[index].getLayoutX() + nodeBoxes[index].getTranslateX() + boxWidth / 2.0 - headLabel.getWidth() / 2.0;
         double targetY = nodeBoxes[index].getLayoutY() + nodeBoxes[index].getTranslateY() - 30.0;
 
-        // compute deltas from current screen layout position
         double startXNow = headLabel.getLayoutX();
         double startYNow = headLabel.getLayoutY();
         double dx = targetX - startXNow;
         double dy = targetY - startYNow;
 
-        // if dx/dy are tiny, directly place
         if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
             headLabel.setLayoutX(targetX);
             headLabel.setLayoutY(targetY);
@@ -362,13 +313,11 @@ public class LinearListVisualization {
             return;
         }
 
-        // animate using TranslateTransition (we'll finalize by setting layout to target and clearing translate)
         TranslateTransition tt = new TranslateTransition(duration, headLabel);
         tt.setByX(dx);
         tt.setByY(dy);
         tt.setInterpolator(Interpolator.EASE_BOTH);
         tt.setOnFinished(ev -> {
-            // finalize exact placement
             headLabel.setLayoutX(targetX);
             headLabel.setLayoutY(targetY);
             headLabel.setTranslateX(0);
@@ -378,37 +327,27 @@ public class LinearListVisualization {
         tt.play();
     }
 
-    // ---------------- Linked List operations (visual + data) ----------------
-
-    private boolean isFull() {
-        return list.size() >= QUEUE_SIZE;
-    }
-
-    // ensure NodeBox is added to pane and positioned (reset translate to avoid stale transforms)
+    // ---------- NodeBox visual helpers ----------
     private void ensureNodePresent(int i) {
         if (i < 0 || i >= QUEUE_SIZE) return;
         if (!workArea.getChildren().contains(nodeBoxes[i])) {
             nodeBoxes[i].setLayoutX(startX + i * spacing);
             nodeBoxes[i].setLayoutY(startY);
-            nodeBoxes[i].setTranslateX(0); // important: reset transforms
+            nodeBoxes[i].setTranslateX(0);
             nodeBoxes[i].setTranslateY(0);
             workArea.getChildren().add(nodeBoxes[i]);
             nodeBoxes[i].toFront();
         } else {
-            // if already present, ensure transforms are cleared before further animations
             nodeBoxes[i].setTranslateX(0);
             nodeBoxes[i].setTranslateY(0);
         }
     }
 
-    // remove all node visuals when list becomes empty
     private void removeAllNodeVisualsIfEmpty() {
         if (list.isEmpty()) {
             for (int i = 0; i < QUEUE_SIZE; i++) {
                 workArea.getChildren().remove(nodeBoxes[i]);
                 nodeBoxes[i].setValue("null");
-                nodeBoxes[i].setTranslateX(0);
-                nodeBoxes[i].setTranslateY(0);
             }
             for (Arrow a : arrows) {
                 a.unbind();
@@ -416,11 +355,14 @@ public class LinearListVisualization {
             }
             arrows.clear();
             headIndex = -1;
-
-            // hide head
             detachHeadBinding();
             headLabel.setVisible(false);
         }
+    }
+
+    // ---------- Insert/Delete operations ----------
+    private boolean isFull() {
+        return list.size() >= QUEUE_SIZE;
     }
 
     private void insertAtStart(int value) {
@@ -588,30 +530,29 @@ public class LinearListVisualization {
         drop.play();
     }
 
-    private void insertAtIndex(int value, int index) {
-        if (isFull()) {
-            log("List is FULL! Cannot insert " + value);
-            return;
-        }
-        if (index < 0 || index > list.size()) {
-            log("Cant Insert. Index out of bounds");
-            return;
+private void insertAtIndex(int value, int index) {
+    if (isFull()) { log("List is FULL!"); return; }
+    if (index < 0 || index > list.size()) { log("Index out of bounds"); return; }
+    if (index == 0) { insertAtStart(value); return; }
+    if (index == list.size()) { insertAtEnd(value); return; }
+
+    // ensure visuals exist
+    for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
+
+    animateHeadTraversal(index, () -> {
+        // 1. shift nodes from end to index
+        SequentialTransition shiftSeq = new SequentialTransition();
+        for (int i = list.size() - 1; i >= index; i--) {
+            NodeBox nb = nodeBoxes[i];
+            TranslateTransition tt = new TranslateTransition(Duration.seconds(0.25), nb);
+            tt.setByX(spacing);
+            shiftSeq.getChildren().add(tt);
         }
 
-        if (index == 0) {
-            insertAtStart(value);
-            return;
-        }
-        if (index == list.size()) {
-            insertAtEnd(value);
-            return;
-        }
-
-        for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
-
-        // traverse visually then insert
-        animateHeadTraversal(index, () -> {
-            double spawnX = startX + index * spacing + spacing / 2.0;
+        beginAnimation();
+        shiftSeq.setOnFinished(ev -> {
+            // 2. now slot is free, create new node above and drop it
+            double spawnX = startX + index * spacing;
             double spawnY = startY - 160;
             NodeBox newBox = new NodeBox(value);
             newBox.setLayoutX(spawnX);
@@ -619,20 +560,14 @@ public class LinearListVisualization {
             workArea.getChildren().add(newBox);
             newBox.toFront();
 
-            SequentialTransition shiftSeq = new SequentialTransition();
-            for (int i = list.size() - 1; i >= index; i--) {
-                NodeBox nb = nodeBoxes[i];
-                nb.setTranslateX(0);
-                nb.setTranslateY(0);
-                TranslateTransition tt = new TranslateTransition(Duration.seconds(0.25), nb);
-                tt.setByX(spacing);
-                shiftSeq.getChildren().add(tt);
-            }
+            TranslateTransition drop = new TranslateTransition(Duration.seconds(0.2), newBox);
+            drop.setByY(startY - spawnY);
 
-            beginAnimation();
-            shiftSeq.setOnFinished(ev -> {
-                list.insertAtLocation(index, value);
+            drop.setOnFinished(dropEv -> {
+                // commit to model
+                list.insertAtLocation(value, index);
 
+                // update all nodeBoxes values & positions
                 for (int i = 0; i < list.size(); i++) {
                     ensureNodePresent(i);
                     NodeBox nb = nodeBoxes[i];
@@ -642,28 +577,21 @@ public class LinearListVisualization {
                     nb.setValue(list.get(i));
                 }
 
-                for (int i = list.size(); i < QUEUE_SIZE; i++) {
-                    if (workArea.getChildren().contains(nodeBoxes[i])) {
-                        nodeBoxes[i].setValue("null");
-                        workArea.getChildren().remove(nodeBoxes[i]);
-                    }
-                }
-
+                // remove temp nodeBox
                 workArea.getChildren().remove(newBox);
-
-                headIndex = list.isEmpty() ? -1 : 0;
                 redrawArrows();
                 log(value + " inserted at index " + index);
-
                 endAnimation();
             });
 
-            TranslateTransition drop = new TranslateTransition(Duration.seconds(0.18), newBox);
-            drop.setByY(startY - spawnY);
-            SequentialTransition seq = new SequentialTransition(shiftSeq, new PauseTransition(Duration.seconds(0.05)), drop);
-            seq.play();
+            drop.play();
         });
-    }
+
+        shiftSeq.play();
+    });
+}
+
+
 
     private void deleteFromStart() {
         if (list.isEmpty()) {
@@ -912,6 +840,7 @@ public class LinearListVisualization {
         });
     }
 
+
     private void updateHeadPosition() {
         if (list.isEmpty()) {
             // hide
@@ -969,7 +898,7 @@ public class LinearListVisualization {
         timeline.play();
     }
 
-    // redraw arrows between consecutive nodes
+    // ---------- Arrow redraw ----------
     private void redrawArrows() {
         for (Arrow a : arrows) {
             a.unbind();
@@ -978,39 +907,43 @@ public class LinearListVisualization {
         arrows.clear();
 
         for (int i = 0; i < list.size() - 1; i++) {
-            if (!workArea.getChildren().contains(nodeBoxes[i])) ensureNodePresent(i);
-            if (!workArea.getChildren().contains(nodeBoxes[i + 1])) ensureNodePresent(i + 1);
-
             NodeBox from = nodeBoxes[i];
             NodeBox to = nodeBoxes[i + 1];
-            Arrow a = drawArrow(from, to);
-            arrows.add(a);
+            // forward arrow (white)
+            Arrow fwd = drawArrow(from, to, Color.WHITE, true);
+            // backward arrow (yellow)
+            Arrow back = drawArrow(to, from, Color.YELLOW, false);
+            arrows.add(fwd);
+            arrows.add(back);
         }
 
-        for (NodeBox nb : nodeBoxes) if (workArea.getChildren().contains(nb)) nb.toFront();
-        // ensure head is on top too
+        for (NodeBox nb : nodeBoxes)
+            if (workArea.getChildren().contains(nb)) nb.toFront();
         if (headLabel.isVisible()) headLabel.toFront();
     }
 
-    private Arrow drawArrow(NodeBox from, NodeBox to) {
-        double padding = 8;
-        double arrowSize = 10;
 
+    private Arrow drawArrow(NodeBox from, NodeBox to, Color color, boolean isForward) {
+        double padding = 6;
+        double arrowSize = 10;
+        double offset = 6; // vertical offset for parallel arrows
+
+        // Adjust start/end X so arrow doesn't go inside node
         DoubleBinding startX = Bindings.createDoubleBinding(
-                () -> from.getLayoutX() + from.getTranslateX() + boxWidth - padding,
+                () -> from.getLayoutX() + from.getTranslateX() + (isForward ? boxWidth + padding : -padding),
                 from.layoutXProperty(), from.translateXProperty()
         );
         DoubleBinding startY = Bindings.createDoubleBinding(
-                () -> from.getLayoutY() + from.getTranslateY() + boxHeight / 2.0,
+                () -> from.getLayoutY() + from.getTranslateY() + boxHeight / 2.0 + (isForward ? -offset : offset),
                 from.layoutYProperty(), from.translateYProperty()
         );
 
         DoubleBinding endX = Bindings.createDoubleBinding(
-                () -> to.getLayoutX() + to.getTranslateX() - padding,
+                () -> to.getLayoutX() + to.getTranslateX() + (isForward ? -padding : boxWidth + padding),
                 to.layoutXProperty(), to.translateXProperty()
         );
         DoubleBinding endY = Bindings.createDoubleBinding(
-                () -> to.getLayoutY() + to.getTranslateY() + boxHeight / 2.0,
+                () -> to.getLayoutY() + to.getTranslateY() + boxHeight / 2.0 + (isForward ? -offset : offset),
                 to.layoutYProperty(), to.translateYProperty()
         );
 
@@ -1019,21 +952,38 @@ public class LinearListVisualization {
         line.startYProperty().bind(startY);
         line.endXProperty().bind(endX);
         line.endYProperty().bind(endY);
-        line.setStroke(Color.WHITE);
+        line.setStroke(color);
         line.setStrokeWidth(2);
 
-        Polygon head = new Polygon(0.0, 0.0,
-                -arrowSize, -arrowSize / 2.0,
-                -arrowSize, arrowSize / 2.0);
-        head.setFill(Color.WHITE);
+        // Arrowhead polygon — rotate for backward arrow
+        Polygon head = new Polygon();
+        if (isForward) {
+            head.getPoints().addAll(
+                    0.0, 0.0,
+                    -arrowSize, -arrowSize / 2.0,
+                    -arrowSize, arrowSize / 2.0
+            );
+        } else {
+            // backward arrow points left → flip
+            head.getPoints().addAll(
+                    0.0, 0.0,
+                    arrowSize, -arrowSize / 2.0,
+                    arrowSize, arrowSize / 2.0
+            );
+        }
+
+        head.setFill(color);
         head.layoutXProperty().bind(endX);
         head.layoutYProperty().bind(endY);
 
         workArea.getChildren().addAll(line, head);
 
-        Arrow a = new Arrow(line, head, startX, startY, endX, endY);
-        return a;
+        return new Arrow(line, head, startX, startY, endX, endY);
     }
 
-    public HBox getRoot(){return root;}
+
+
+    public HBox getRoot() {
+        return root;
+    }
 }

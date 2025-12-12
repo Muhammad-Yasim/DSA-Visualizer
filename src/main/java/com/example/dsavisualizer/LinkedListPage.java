@@ -107,7 +107,7 @@ public class LinkedListPage {
         rightSide.setPadding(new Insets(60,0,0,20));
 
         Button doublyLB=menuButton("Doubly L.L.");
-        //doublyLB.setOnAction(e->showDoublyListVisualization());
+        doublyLB.setOnAction(e->showDoublyListVisualization());
 
         Button circularDoublyLB=menuButton("Circular Doubly L.L.");
         //circularDoublyLB.setOnAction(e->showDoublyCircularListVisualization());
@@ -152,13 +152,13 @@ public class LinkedListPage {
         Scene scene = new Scene(linearListVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
-/*
+
     private void showDoublyListVisualization(){
         DoublyListVisualization doublyListVisualization=new DoublyListVisualization();
         Scene scene = new Scene(doublyListVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
-
+/*
     private void showLinearCircularListVisualization(){
         LinearCircularListVisualization linearCircularListVisualization=new LinearCircularListVisualization();
         Scene scene = new Scene(linearCircularListVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
