@@ -127,7 +127,7 @@ public class LandingPage {
         App.getPrimaryStage().setScene(scene);
     }
 
-    public void showLinkedListPage(){
+    protected static void showLinkedListPage(){
         LinkedListPage addLinkedListPage=new LinkedListPage();
         Scene scene = new Scene(addLinkedListPage.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);

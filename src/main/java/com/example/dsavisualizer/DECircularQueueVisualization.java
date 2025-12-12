@@ -126,12 +126,14 @@ public class DECircularQueueVisualization {
         return workArea;
     }
 
-    private TextArea createConsole() {
+    private TextArea createConsole(){
         console = new TextArea();
         console.setEditable(false);
         console.setWrapText(true);
+        console.setStyle(
+                "-fx-control-inner-background: black;-fx-text-fill: #7CFC00;-fx-font-family: Consolas;-fx-font-size: 14px;-fx-background-color: black;-fx-background-insets: 0;-fx-background-radius: 0;-fx-border-color: transparent;-fx-border-width: 0;"
+        );
         console.setPrefHeight(125);
-        console.setStyle("-fx-control-inner-background: black;-fx-text-fill: #7CFC00;-fx-font-family: Consolas;-fx-font-size: 14px;");
         return console;
     }
 

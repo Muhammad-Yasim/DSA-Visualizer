@@ -12,7 +12,7 @@ public class QueueDoublyLinear {
 
         // ---------------- ENQUEUE FRONT ----------------
         public void enqueueFront(int value) {     //Only this is changed,otherwise-all same
-            if (rear == arr.length - 1)
+            if (isFull() )
                 System.out.println("Deque is full");
             else if (front == -1) { // empty queue
                 front = rear = 0;
@@ -30,7 +30,7 @@ public class QueueDoublyLinear {
 
         // ---------------- ENQUEUE BACK ----------------
         public void enqueueBack(int value) {
-            if (rear == arr.length - 1)
+            if (isFull())
                 System.out.println("Deque is full");
             else {
                 if (front == -1)
@@ -67,7 +67,6 @@ public class QueueDoublyLinear {
         }
 
 
-    // ---------------- GET FRONT INDEX ----------------
     public int frontIndex() {
         return front;
     }
@@ -80,11 +79,12 @@ public class QueueDoublyLinear {
     public int getValueAt(int index) {
         //if (index < 0 || index >= size) return -1;  // or throw exception
         return arr[index];
-    }
+    }  // ---------------- GET FRONT INDEX ----------------
+
 
 
     public boolean isFull() {
-        return (front == 0 && rear == arr.length - 1);
+        return (rear == arr.length - 1);
     }
 
 

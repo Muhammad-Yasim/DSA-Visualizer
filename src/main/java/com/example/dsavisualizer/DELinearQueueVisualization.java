@@ -168,9 +168,8 @@ public class DELinearQueueVisualization {
     // ---------------- OPERATIONS ----------------
 
     private void enqueueFront(int value) {
-        int prevRear = queue.rearIndex();
         if(queue.isFull()){
-            log("Queue is full!! Cant enqueueFront value "+value);
+            log("Queue is full!! Cant enqueue "+value+" at Front.");
             return;
         }
         queue.enqueueFront(value);
@@ -180,9 +179,8 @@ public class DELinearQueueVisualization {
     }
 
     private void enqueueBack(int value) {
-        int prevRear = queue.rearIndex();
         if(queue.isFull()){
-            log("Queue is full!! Cant enqueueBack value "+value);
+            log("Queue is full!! Cant enqueue "+value+" at Back.");
             return;
         }
         queue.enqueueBack(value);
@@ -197,7 +195,7 @@ public class DELinearQueueVisualization {
             refreshBoxes();
             log(val + " dequeued from FRONT");
             updatePointers();
-        } else log("Deque is EMPTY! Cannot dequeueFront");
+        } else log("Queue is EMPTY! Cannot dequeueFront");
     }
 
     private void dequeueBack() {
@@ -206,7 +204,7 @@ public class DELinearQueueVisualization {
             refreshBoxes();
             log(val + " dequeued from BACK");
             updatePointers();
-        } else log("Deque is EMPTY! Cannot dequeueBack");
+        } else log("Queue is EMPTY! Cannot dequeueBack");
     }
 
     private void refreshBoxes() {
@@ -257,7 +255,6 @@ public class DELinearQueueVisualization {
         button.setOnMouseExited(e-> {
             button.setStyle("-fx-background-color: #9FB873; -fx-border-color: transparent; -fx-text-fill: white; -fx-font-size: 15px; -fx-cursor: hand;");
         });
-        //button.setOnAction(e-> App.showLandingPage());
 
         return button;
     }
