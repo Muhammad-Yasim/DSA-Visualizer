@@ -164,7 +164,7 @@ public class LinearListVisualization {
         Label titleLabel=new Label("Controls");
         titleLabel.setStyle("-fx-font-size: 25px; -fx-font-weight: bold; -fx-text-fill: white;");
 
-        Label valueLabel=new Label("Value (Maximum 6 nodes can be created)");
+        Label valueLabel=new Label("Value (Maximum 6 nodes allowed)");
         valueLabel.setStyle("-fx-font-size: 15px; -fx-text-fill: #95A575;");
 
         TextField valueEnq=new TextField();

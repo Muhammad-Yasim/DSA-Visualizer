@@ -4,6 +4,7 @@ import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -18,11 +19,12 @@ import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class DoublyListVisualization {
+public class DoublyCircularListVisualization {
 
-    private ListDoubly list;
+    private ListCircularDoubly list;
     private NodeBox[] nodeBoxes;
     private final int QUEUE_SIZE = 6;
 
@@ -39,13 +41,13 @@ public class DoublyListVisualization {
     private double spacing = boxWidth + 50;
 
     private final List<Arrow> arrows = new ArrayList<>();
-    private int headIndex = -1;
+    private int lastIndex = -1;
 
-    private Label headLabel;
-    private DoubleBinding headXBinding = null;
-    private DoubleBinding headYBinding = null;
+    private Label lastLabel;
+    private DoubleBinding lastXBinding = null;
+    private DoubleBinding lastYBinding = null;
 
-    public DoublyListVisualization() {
+    public DoublyCircularListVisualization() {
         createUI();
     }
 
@@ -80,7 +82,7 @@ public class DoublyListVisualization {
         HBox header = new HBox();
         header.setPadding(new Insets(10, 10, 0, 15));
 
-        Label titleLabel = new Label("Doubly Linked List Visualization");
+        Label titleLabel = new Label("Doubly Circular Linked List Visualization");
         titleLabel.setStyle("-fx-font-size: 25px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         Region spacer = new Region();
@@ -106,7 +108,7 @@ public class DoublyListVisualization {
         workArea.setPrefHeight(626);
         workArea.setPrefWidth(1204);
 
-        list = new ListDoubly();
+        list = new ListCircularDoubly();
         nodeBoxes = new NodeBox[QUEUE_SIZE];
 
         for (int i = 0; i < QUEUE_SIZE; i++) {
@@ -115,10 +117,10 @@ public class DoublyListVisualization {
             nodeBoxes[i].setLayoutY(startY);
         }
 
-        headLabel = new Label("Head");
-        headLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #FFD54F;");
-        headLabel.setVisible(false);
-        workArea.getChildren().add(headLabel);
+        lastLabel = new Label("Last");
+        lastLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #FF7043;");
+        lastLabel.setVisible(false);
+        workArea.getChildren().add(lastLabel);
 
         return workArea;
     }
@@ -151,9 +153,17 @@ public class DoublyListVisualization {
         valueLabel.setStyle("-fx-font-size: 15px; -fx-text-fill: #95A575;");
 
         TextField valueEnq = new TextField();
-        valueEnq.setPromptText("e.g., 42");
+        valueEnq.setPromptText("Value to insert / delete (e.g. 42)");
         valueEnq.setPrefHeight(45);
         valueEnq.setStyle("-fx-background-color: #3D4F40;-fx-text-fill: white;-fx-font-size: 16px;");
+
+        Label targetLabel = new Label("Target value (for Insert After)");
+        targetLabel.setStyle("-fx-font-size: 15px; -fx-text-fill: #95A575;");
+
+        TextField targetField = new TextField();
+        targetField.setPromptText("After which value? (e.g. 10)");
+        targetField.setPrefHeight(45);
+        targetField.setStyle("-fx-background-color: #3D4F40;-fx-text-fill: white;-fx-font-size: 16px;");
 
         Button insertStartButton = controlPanelButton("Insert at Start");
         insertStartButton.setDefaultButton(true);
@@ -182,6 +192,22 @@ public class DoublyListVisualization {
             }
         });
 
+        // NEW: Insert After (matches ListCircularDoubly.insertAfter(data, item))
+        Button insertAfterButton = controlPanelButton("Insert After (target)");
+        insertAfterButton.setOnAction(e -> {
+            if (animCount > 0) return;
+            String valTxt = valueEnq.getText();
+            String tgtTxt = targetField.getText();
+            if (valTxt.isEmpty() || tgtTxt.isEmpty()) return;
+            try {
+                int value = Integer.parseInt(valTxt);
+                int target = Integer.parseInt(tgtTxt);
+                insertAfter(value, target);
+            } catch (NumberFormatException ex) {
+                System.out.println("Invalid value or target");
+            }
+        });
+
         Button deleteStartButton = controlPanelButton("Delete from Start");
         deleteStartButton.setOnAction(e -> {
             if (animCount > 0) return;
@@ -194,44 +220,21 @@ public class DoublyListVisualization {
             deleteFromEnd();
         });
 
-        Label indexLabel = new Label("Index");
-        indexLabel.setStyle("-fx-font-size: 15px; -fx-text-fill: #95A575;");
-
-        TextField indexField = new TextField();
-        indexField.setPromptText("Must be less than 6");
-        indexField.setPrefHeight(45);
-        indexField.setStyle("-fx-background-color: #3D4F40;-fx-text-fill: white;-fx-font-size: 16px;");
-
-        Button insertMidButton = controlPanelButton("Insert at Index");
-        insertMidButton.setOnAction(e -> {
+        // NEW: Delete by value (matches ListCircularDoubly.deleteByData(item))
+        Button deleteByValueButton = controlPanelButton("Delete (by value)");
+        deleteByValueButton.setOnAction(e -> {
             if (animCount > 0) return;
-            String text = valueEnq.getText();
-            String idx = indexField.getText();
-            if (text.isEmpty() || idx.isEmpty()) return;
+            String valTxt = valueEnq.getText();
+            if (valTxt.isEmpty()) return;
             try {
-                int value = Integer.parseInt(text);
-                int index = Integer.parseInt(idx);
-                insertAtIndex(value, index);
+                int item = Integer.parseInt(valTxt);
+                deleteByValue(item);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid value or index");
+                System.out.println("Invalid value");
             }
         });
 
-        Button deleteMidButton = controlPanelButton("Delete at Index");
-        deleteMidButton.setOnAction(e -> {
-            if (animCount > 0) return;
-            String idx = indexField.getText();
-            if (idx.isEmpty()) return;
-            try {
-                int index = Integer.parseInt(idx);
-                deleteAtIndex(index);
-            } catch (NumberFormatException ex) {
-                System.out.println("Invalid index");
-            }
-        });
-
-        root.getChildren().addAll(titleLabel, valueLabel, valueEnq, insertStartButton, insertEndButton,
-                deleteStartButton, deleteEndButton, indexLabel, indexField, insertMidButton, deleteMidButton);
+        root.getChildren().addAll(titleLabel, valueLabel, valueEnq,insertStartButton, insertEndButton,deleteStartButton, deleteEndButton, deleteByValueButton, targetLabel, targetField,insertAfterButton);
 
         return root;
     }
@@ -255,73 +258,77 @@ public class DoublyListVisualization {
         if (animCount == 0 && controlPanel != null) controlPanel.setDisable(false);
     }
 
-    // ---------- HEAD logic ----------
-    private void attachHeadToIndex(int idx) {
+    // ---------- LAST label logic ----------
+    private void attachLastToIndex(int idx) {
         if (idx < 0 || idx >= QUEUE_SIZE) return;
-        detachHeadBinding();
+        detachLastBinding();
         ensureNodePresent(idx);
-        headLabel.setVisible(true);
+        lastLabel.setVisible(true);
 
-        headXBinding = Bindings.createDoubleBinding(
-                () -> nodeBoxes[idx].getLayoutX() + nodeBoxes[idx].getTranslateX() + boxWidth / 2.0 - headLabel.getWidth() / 2.0,
-                nodeBoxes[idx].layoutXProperty(), nodeBoxes[idx].translateXProperty(), headLabel.widthProperty()
+        lastXBinding = Bindings.createDoubleBinding(
+                () -> nodeBoxes[idx].getLayoutX()
+                        + nodeBoxes[idx].getTranslateX()
+                        + boxWidth / 2.0
+                        - lastLabel.getWidth() / 2.0,
+                nodeBoxes[idx].layoutXProperty(),
+                nodeBoxes[idx].translateXProperty(),
+                lastLabel.widthProperty()
         );
 
-        headYBinding = Bindings.createDoubleBinding(
-                () -> nodeBoxes[idx].getLayoutY() + nodeBoxes[idx].getTranslateY() - 30,
-                nodeBoxes[idx].layoutYProperty(), nodeBoxes[idx].translateYProperty()
+        lastYBinding = Bindings.createDoubleBinding(
+                () -> nodeBoxes[idx].getLayoutY()
+                        + nodeBoxes[idx].getTranslateY()
+                        + boxHeight + 8,
+                nodeBoxes[idx].layoutYProperty(),
+                nodeBoxes[idx].translateYProperty()
         );
 
-        headLabel.layoutXProperty().bind(headXBinding);
-        headLabel.layoutYProperty().bind(headYBinding);
+        lastLabel.layoutXProperty().bind(lastXBinding);
+        lastLabel.layoutYProperty().bind(lastYBinding);
     }
 
-    private void detachHeadBinding() {
-        try {
-            if (headXBinding != null) headLabel.layoutXProperty().unbind();
-        } catch (Exception ignored) {}
-        try {
-            if (headYBinding != null) headLabel.layoutYProperty().unbind();
-        } catch (Exception ignored) {}
-        headXBinding = null;
-        headYBinding = null;
+    private void detachLastBinding() {
+        try { lastLabel.layoutXProperty().unbind(); } catch (Exception ignored) {}
+        try { lastLabel.layoutYProperty().unbind(); } catch (Exception ignored) {}
+        lastXBinding = null;
+        lastYBinding = null;
     }
 
-    private void animateHeadMoveToIndex(int index, Duration duration, Runnable onFinished) {
+    private void animateLastMoveToIndex(int index, Duration duration, Runnable onFinished) {
         if (index < 0 || index >= QUEUE_SIZE) {
             if (onFinished != null) onFinished.run();
             return;
         }
 
-        detachHeadBinding();
+        detachLastBinding();
         ensureNodePresent(index);
 
-        double targetX = nodeBoxes[index].getLayoutX() + nodeBoxes[index].getTranslateX() + boxWidth / 2.0 - headLabel.getWidth() / 2.0;
-        double targetY = nodeBoxes[index].getLayoutY() + nodeBoxes[index].getTranslateY() - 30.0;
+        double targetX = nodeBoxes[index].getLayoutX() + nodeBoxes[index].getTranslateX() + boxWidth / 2.0 - lastLabel.getWidth() / 2.0;
+        double targetY = nodeBoxes[index].getLayoutY() + nodeBoxes[index].getTranslateY() + boxHeight + 8;
 
-        double startXNow = headLabel.getLayoutX();
-        double startYNow = headLabel.getLayoutY();
+        double startXNow = lastLabel.getLayoutX();
+        double startYNow = lastLabel.getLayoutY();
         double dx = targetX - startXNow;
         double dy = targetY - startYNow;
 
         if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
-            headLabel.setLayoutX(targetX);
-            headLabel.setLayoutY(targetY);
-            headLabel.setTranslateX(0);
-            headLabel.setTranslateY(0);
+            lastLabel.setLayoutX(targetX);
+            lastLabel.setLayoutY(targetY);
+            lastLabel.setTranslateX(0);
+            lastLabel.setTranslateY(0);
             if (onFinished != null) onFinished.run();
             return;
         }
 
-        TranslateTransition tt = new TranslateTransition(duration, headLabel);
+        TranslateTransition tt = new TranslateTransition(duration, lastLabel);
         tt.setByX(dx);
         tt.setByY(dy);
         tt.setInterpolator(Interpolator.EASE_BOTH);
         tt.setOnFinished(ev -> {
-            headLabel.setLayoutX(targetX);
-            headLabel.setLayoutY(targetY);
-            headLabel.setTranslateX(0);
-            headLabel.setTranslateY(0);
+            lastLabel.setLayoutX(targetX);
+            lastLabel.setLayoutY(targetY);
+            lastLabel.setTranslateX(0);
+            lastLabel.setTranslateY(0);
             if (onFinished != null) onFinished.run();
         });
         tt.play();
@@ -352,11 +359,13 @@ public class DoublyListVisualization {
             for (Arrow a : arrows) {
                 a.unbind();
                 workArea.getChildren().removeAll(a.line, a.head);
+                Object extras = a.head.getUserData();
+                if (extras instanceof List) workArea.getChildren().removeAll((List) extras);
             }
             arrows.clear();
-            headIndex = -1;
-            detachHeadBinding();
-            headLabel.setVisible(false);
+            lastIndex = -1;
+            detachLastBinding();
+            lastLabel.setVisible(false);
         }
     }
 
@@ -371,7 +380,6 @@ public class DoublyListVisualization {
             return;
         }
 
-        // ========= CASE 1: EMPTY LIST =========
         if (list.size() == 0) {
             NodeBox temp = new NodeBox(value);
             double spawnX = startX + 0 * spacing;
@@ -388,7 +396,6 @@ public class DoublyListVisualization {
             drop.setOnFinished(e -> {
                 list.insertAtBeginning(value);
 
-                // ensure slot 0 exists and set its value
                 ensureNodePresent(0);
                 nodeBoxes[0].setLayoutX(startX);
                 nodeBoxes[0].setTranslateX(0);
@@ -397,14 +404,13 @@ public class DoublyListVisualization {
 
                 workArea.getChildren().remove(temp);
 
-                headIndex = list.isEmpty() ? -1 : 0;
+                lastIndex = list.isEmpty() ? -1 : list.size() - 1;
                 redrawArrows();
-                // head should show above the newly created node
-                headLabel.setVisible(true);
-                headLabel.setLayoutX(nodeBoxes[0].getLayoutX() + boxWidth/2.0 - headLabel.getWidth()/2.0);
-                headLabel.setLayoutY(nodeBoxes[0].getLayoutY() - 30);
-                log(value + " inserted at start");
 
+                lastLabel.setVisible(true);
+                attachLastToIndex(lastIndex);
+
+                log(value + " inserted at start");
                 endAnimation();
             });
 
@@ -412,25 +418,18 @@ public class DoublyListVisualization {
             return;
         }
 
-        // ========= CASE 2: NON-EMPTY LIST =========
-        // ensure visuals exist for all nodes
+        // non-empty
         for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
 
-        // Attach head to the current first node so it moves "with" it while shifting
-        attachHeadToIndex(0);
-
-        // Shift visuals to the right for existing nodes (sequential as before)
+        // shift existing to right
         SequentialTransition shiftAll = new SequentialTransition();
         for (int i = list.size() - 1; i >= 0; i--) {
             NodeBox nb = nodeBoxes[i];
-            nb.setTranslateX(0);
-            nb.setTranslateY(0);
             TranslateTransition tt = new TranslateTransition(Duration.seconds(0.25), nb);
             tt.setByX(spacing);
             shiftAll.getChildren().add(tt);
         }
 
-        // Create the new node box above the first slot (temporary)
         NodeBox newBox = new NodeBox(value);
         double spawnX = startX + 0 * spacing;
         double spawnY = startY - 160;
@@ -439,22 +438,14 @@ public class DoublyListVisualization {
         workArea.getChildren().add(newBox);
         newBox.toFront();
 
-        // Drop new node into slot 0
         TranslateTransition drop = new TranslateTransition(Duration.seconds(0.25), newBox);
         drop.setByY(startY - spawnY);
 
-        SequentialTransition full = new SequentialTransition(
-                shiftAll,
-                new PauseTransition(Duration.seconds(0.05)),
-                drop
-        );
-
+        SequentialTransition full = new SequentialTransition(shiftAll, new PauseTransition(Duration.seconds(0.05)), drop);
         beginAnimation();
         full.setOnFinished(e -> {
-            // commit data structure change
             list.insertAtBeginning(value);
 
-            // update visuals by writing the new values into each slot
             for (int i = 0; i < list.size(); i++) {
                 ensureNodePresent(i);
                 NodeBox nb = nodeBoxes[i];
@@ -464,7 +455,6 @@ public class DoublyListVisualization {
                 nb.setValue(list.get(i));
             }
 
-            // clean up any leftover slot visuals beyond current size
             for (int i = list.size(); i < QUEUE_SIZE; i++) {
                 if (workArea.getChildren().contains(nodeBoxes[i])) {
                     nodeBoxes[i].setValue("null");
@@ -472,18 +462,14 @@ public class DoublyListVisualization {
                 }
             }
 
-            // remove temporary newBox
             workArea.getChildren().remove(newBox);
 
-            // Now head is still attached to the old first node (which moved right).
-            // Animate head from old-node position to above the newly inserted node at index 0.
-            // Detach binding and animate to index 0, then finalize.
-            animateHeadMoveToIndex(0, Duration.seconds(0.18), () -> {
-                headIndex = 0;
-                redrawArrows();
-                log(value + " inserted at start");
-                endAnimation();
-            });
+            lastIndex = list.size() - 1;
+            redrawArrows();
+            attachLastToIndex(lastIndex);
+
+            log(value + " inserted at start");
+            endAnimation();
         });
 
         full.play();
@@ -497,7 +483,7 @@ public class DoublyListVisualization {
 
         for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
 
-        int finalIndex = list.size(); // index where it will land
+        int finalIndex = list.size();
         NodeBox newBox = new NodeBox(value);
         double spawnX = startX + finalIndex * spacing + spacing / 2.0;
         double spawnY = startY - 160;
@@ -519,87 +505,100 @@ public class DoublyListVisualization {
 
             workArea.getChildren().remove(newBox);
 
-            headIndex = list.isEmpty() ? -1 : 0;
+            lastIndex = list.size() - 1;
             redrawArrows();
-            updateHeadPosition();
-            log(value + " inserted at end");
+            attachLastToIndex(lastIndex);
 
+            log(value + " inserted at end");
             endAnimation();
         });
 
         drop.play();
     }
 
-private void insertAtIndex(int value, int index) {
-    if (isFull()) { log("List is FULL!"); return; }
-    if (index < 0 || index > list.size()) { log("Index out of bounds"); return; }
-    if (index == 0) { insertAtStart(value); return; }
-    if (index == list.size()) { insertAtEnd(value); return; }
-
-    // ensure visuals exist
-    for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
-
-    animateHeadTraversal(index, () -> {
-        // 1. shift nodes from end to index
-        SequentialTransition shiftSeq = new SequentialTransition();
-        for (int i = list.size() - 1; i >= index; i--) {
-            NodeBox nb = nodeBoxes[i];
-            TranslateTransition tt = new TranslateTransition(Duration.seconds(0.25), nb);
-            tt.setByX(spacing);
-            shiftSeq.getChildren().add(tt);
+    // ---------- NEW: Insert After (by value) ----------
+    // Calls your ListCircularDoubly.insertAfter(data, item)
+    private void insertAfter(int valueToInsert, int targetValue) {
+        if (isFull()) {
+            log("List is FULL! Cannot insert " + valueToInsert);
+            return;
         }
 
-        beginAnimation();
-        shiftSeq.setOnFinished(ev -> {
-            // 2. now slot is free, create new node above and drop it
-            double spawnX = startX + index * spacing;
-            double spawnY = startY - 160;
-            NodeBox newBox = new NodeBox(value);
-            newBox.setLayoutX(spawnX);
-            newBox.setLayoutY(spawnY);
-            workArea.getChildren().add(newBox);
-            newBox.toFront();
+        // find index of targetValue
+        int targetIdx = findIndexByValue(targetValue);
+        if (targetIdx == -1) {
+            log("Target value " + targetValue + " not found.");
+            return;
+        }
 
-            TranslateTransition drop = new TranslateTransition(Duration.seconds(0.2), newBox);
-            drop.setByY(startY - spawnY);
+        // ensure visuals for current nodes
+        for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
 
-            drop.setOnFinished(dropEv -> {
-                // commit to model
-                list.insertAtLocation(value, index);
+        // animate traversal to targetIdx
+        animateHeadTraversal(targetIdx, () -> {
+            // visually insert: shift nodes right from end down to targetIdx+1
+            SequentialTransition shiftSeq = new SequentialTransition();
+            for (int i = list.size() - 1; i > targetIdx; i--) {
+                NodeBox nb = nodeBoxes[i];
+                TranslateTransition tt = new TranslateTransition(Duration.seconds(0.25), nb);
+                tt.setByX(spacing);
+                shiftSeq.getChildren().add(tt);
+            }
 
-                // update all nodeBoxes values & positions
-                for (int i = 0; i < list.size(); i++) {
-                    ensureNodePresent(i);
-                    NodeBox nb = nodeBoxes[i];
-                    nb.setLayoutX(startX + i * spacing);
-                    nb.setTranslateX(0);
-                    nb.setTranslateY(0);
-                    nb.setValue(list.get(i));
-                }
+            beginAnimation();
+            shiftSeq.setOnFinished(ev -> {
+                // show the new node above the slot (targetIdx+1)
+                double spawnX = startX + (targetIdx + 1) * spacing;
+                double spawnY = startY - 160;
+                NodeBox newBox = new NodeBox(valueToInsert);
+                newBox.setLayoutX(spawnX);
+                newBox.setLayoutY(spawnY);
+                workArea.getChildren().add(newBox);
+                newBox.toFront();
 
-                // remove temp nodeBox
-                workArea.getChildren().remove(newBox);
-                redrawArrows();
-                log(value + " inserted at index " + index);
-                endAnimation();
+                TranslateTransition drop = new TranslateTransition(Duration.seconds(0.18), newBox);
+                drop.setByY(startY - spawnY);
+
+                drop.setOnFinished(dropEv -> {
+                    // commit to model using your API
+                    list.insertAfter(valueToInsert, targetValue);
+
+                    // update visuals from model
+                    for (int i = 0; i < list.size(); i++) {
+                        ensureNodePresent(i);
+                        NodeBox nb = nodeBoxes[i];
+                        nb.setLayoutX(startX + i * spacing);
+                        nb.setTranslateX(0);
+                        nb.setTranslateY(0);
+                        nb.setValue(list.get(i));
+                    }
+
+                    // remove temp node visual
+                    workArea.getChildren().remove(newBox);
+
+                    lastIndex = list.size() - 1;
+                    redrawArrows();
+                    attachLastToIndex(lastIndex);
+
+                    log(valueToInsert + " inserted after " + targetValue);
+                    endAnimation();
+                });
+
+                drop.play();
             });
 
-            drop.play();
+            shiftSeq.play();
         });
+    }
 
-        shiftSeq.play();
-    });
-}
-
-
-
+    // ---------- Delete operations ----------
     private void deleteFromStart() {
         if (list.isEmpty()) {
             log("List is empty.");
             return;
         }
 
-        // If only one node, keep previous flow (remove then vanish, hide head)
+        // special case: single node
         if (list.size() == 1) {
             int removed = list.deleteFromBeginning();
 
@@ -634,18 +633,16 @@ private void insertAtIndex(int value, int index) {
             return;
         }
 
-        // For size > 1: first animate head to second node, THEN delete first node (as you requested)
-        // Ensure nodes present
-        for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
+        // For safe shifting, capture old size before modifying the model
+        final int oldSize = list.size();
 
-        beginAnimation(); // disable controls during head move + subsequent delete animation
+        for (int i = 0; i < oldSize; i++) ensureNodePresent(i);
 
-        // animate head to node index 1
-        animateHeadMoveToIndex(1, Duration.seconds(0.18), () -> {
-            // now proceed to delete the first node (we remove from model and play vanish+shift)
+        beginAnimation();
+        // highlight head only (index 0) to avoid index confusion
+        animateHeadTraversal(0, () -> {
             int removed = list.deleteFromBeginning();
 
-            // ensure visuals; target is current nodeBoxes[0]
             ensureNodePresent(0);
             NodeBox target = nodeBoxes[0];
 
@@ -662,13 +659,11 @@ private void insertAtIndex(int value, int index) {
             lift.setByY(-80);
             ParallelTransition vanish = new ParallelTransition(fade, lift);
 
-            // shift remaining nodes left (index 1..size -> 0..size-1)
+            // shift nodes left visually from 1 .. oldSize-1
             SequentialTransition shiftSeq = new SequentialTransition();
-            for (int i = 1; i <= list.size(); i++) {
+            for (int i = 1; i < oldSize; i++) {
                 ensureNodePresent(i);
                 NodeBox nb = nodeBoxes[i];
-                nb.setTranslateX(0);
-                nb.setTranslateY(0);
                 TranslateTransition tt = new TranslateTransition(Duration.seconds(0.25), nb);
                 tt.setByX(-spacing);
                 shiftSeq.getChildren().add(tt);
@@ -676,8 +671,7 @@ private void insertAtIndex(int value, int index) {
 
             vanish.setOnFinished(ev -> workArea.getChildren().remove(temp));
 
-            shiftSeq.setOnFinished(ev -> {
-                // update visuals
+            shiftSeq.setOnFinished(evt -> {
                 for (int i = 0; i < list.size(); i++) {
                     ensureNodePresent(i);
                     NodeBox nb = nodeBoxes[i];
@@ -694,15 +688,13 @@ private void insertAtIndex(int value, int index) {
                     }
                 }
 
-                headIndex = list.isEmpty() ? -1 : 0;
+                lastIndex = list.size() - 1;
+                redrawArrows();
+                attachLastToIndex(lastIndex);
 
-                // After removal and shifting, move head to new first node (index 0) smoothly
-                animateHeadMoveToIndex(0, Duration.seconds(0.12), () -> {
-                    redrawArrows();
-                    log(removed + " deleted from start");
-                    if (list.isEmpty()) removeAllNodeVisualsIfEmpty();
-                    endAnimation();
-                });
+                log(removed + " deleted from start");
+                if (list.isEmpty()) removeAllNodeVisualsIfEmpty();
+                endAnimation();
             });
 
             SequentialTransition full = new SequentialTransition(vanish, new PauseTransition(Duration.seconds(0.05)), shiftSeq);
@@ -743,9 +735,9 @@ private void insertAtIndex(int value, int index) {
                 workArea.getChildren().remove(nodeBoxes[idx]);
             }
 
-            headIndex = list.isEmpty() ? -1 : 0;
+            lastIndex = list.size() - 1;
             redrawArrows();
-            updateHeadPosition();
+            attachLastToIndex(lastIndex);
             log(removed + " deleted from end");
 
             removeAllNodeVisualsIfEmpty();
@@ -755,29 +747,41 @@ private void insertAtIndex(int value, int index) {
         vanish.play();
     }
 
-    private void deleteAtIndex(int index) {
+    // ---------- NEW: delete by value (deleteByData) ----------
+    private void deleteByValue(int item) {
         if (list.isEmpty()) {
             log("List is empty.");
             return;
         }
-        if (index < 0 || index >= list.size()) {
-            log("Cant Delete. Index out of bounds");
+
+        // find index of the node whose data == item
+        int idx = findIndexByValue(item);
+        if (idx == -1) {
+            log("Value " + item + " not found.");
             return;
         }
-        if(index==0){
+
+        // if it is start/first node, reuse deleteFromStart
+        if (idx == 0) {
             deleteFromStart();
             return;
         }
 
+        // otherwise traversal to idx then animate deletion
+        for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
 
-        for (int i = 0; i < list.size(); i++)
-            ensureNodePresent(i);
+        animateHeadTraversal(idx, () -> {
+            int removed;
+            try {
+                removed = list.deleteByData(item);
+            } catch (RuntimeException ex) {
+                log("Delete failed: " + ex.getMessage());
+                return;
+            }
 
-        // traversal is now treated as an animation (prevents interleaving)
-        animateHeadTraversal(index, () -> {
-            int removed = list.deleteAtLocation(index);
-            ensureNodePresent(index);
-            NodeBox target = nodeBoxes[index];
+            // show vanish animation at idx slot
+            ensureNodePresent(idx);
+            NodeBox target = nodeBoxes[idx];
 
             NodeBox temp = new NodeBox(removed);
             temp.setLayoutX(target.getLayoutX());
@@ -793,71 +797,76 @@ private void insertAtIndex(int value, int index) {
             ParallelTransition vanish = new ParallelTransition(fade, lift);
 
             beginAnimation();
-            vanish.setOnFinished(ev -> {
-                workArea.getChildren().remove(temp);
+            vanish.setOnFinished(ev -> workArea.getChildren().remove(temp));
 
-                SequentialTransition shiftSeq = new SequentialTransition();
-                for (int i = index; i < list.size(); i++) {
-                    ensureNodePresent(i + 1);
-                    NodeBox nb = nodeBoxes[i + 1];
+            // shift nodes left visually from idx+1 .. end
+            SequentialTransition shiftSeq = new SequentialTransition();
+            for (int i = idx; i < list.size(); i++) {
+                ensureNodePresent(i + 1);
+                NodeBox nb = nodeBoxes[i + 1];
+                TranslateTransition tt = new TranslateTransition(Duration.seconds(0.25), nb);
+                tt.setByX(-spacing);
+                shiftSeq.getChildren().add(tt);
+            }
+
+            shiftSeq.setOnFinished(evt -> {
+                for (int i = idx; i < list.size(); i++) {
+                    ensureNodePresent(i);
+                    NodeBox nb = nodeBoxes[i];
+                    nb.setLayoutX(startX + i * spacing);
                     nb.setTranslateX(0);
                     nb.setTranslateY(0);
-                    TranslateTransition tt = new TranslateTransition(Duration.seconds(0.25), nb);
-                    tt.setByX(-spacing);
-                    shiftSeq.getChildren().add(tt);
+                    nb.setValue(list.get(i));
                 }
 
-                shiftSeq.setOnFinished(evt -> {
-                    for (int i = index; i < list.size(); i++) {
-                        ensureNodePresent(i);
-                        NodeBox nb = nodeBoxes[i];
-                        nb.setLayoutX(startX + i * spacing);
-                        nb.setTranslateX(0);
-                        nb.setTranslateY(0);
-                        nb.setValue(list.get(i));
+                for (int i = list.size(); i < QUEUE_SIZE; i++) {
+                    if (workArea.getChildren().contains(nodeBoxes[i])) {
+                        nodeBoxes[i].setValue("null");
+                        workArea.getChildren().remove(nodeBoxes[i]);
                     }
+                }
 
-                    for (int i = list.size(); i < QUEUE_SIZE; i++) {
-                        if (workArea.getChildren().contains(nodeBoxes[i])) {
-                            nodeBoxes[i].setValue("null");
-                            workArea.getChildren().remove(nodeBoxes[i]);
-                        }
-                    }
+                lastIndex = list.size() - 1;
+                redrawArrows();
+                attachLastToIndex(lastIndex);
 
-                    headIndex = list.isEmpty() ? -1 : 0;
-                    redrawArrows();
-                    updateHeadPosition();
-                    log(removed + " deleted at index " + index);
-
-                    removeAllNodeVisualsIfEmpty();
-                    endAnimation();
-                });
-
-                shiftSeq.play();
+                log(removed + " deleted (value " + item + ")");
+                endAnimation();
             });
 
             vanish.play();
+            shiftSeq.play();
         });
     }
 
+    // ---------- helpers ----------
+    private int findIndexByValue(int val) {
+        if (list.isEmpty()) return -1;
+        int n = list.size();
+        for (int i = 0; i < n; i++) {
+            try {
+                if (list.get(i) == val) return i;
+            } catch (IndexOutOfBoundsException ignored) {}
+        }
+        return -1;
+    }
 
-    private void updateHeadPosition() {
+    private void updateLastPosition() {
         if (list.isEmpty()) {
-            // hide
-            detachHeadBinding();
-            headLabel.setVisible(false);
+            detachLastBinding();
+            lastLabel.setVisible(false);
             return;
         }
-        // show above first node (no animation) — used for operations that don't require attached movement
-        ensureNodePresent(0);
-        detachHeadBinding();
-        double targetX = nodeBoxes[0].getLayoutX() + boxWidth / 2.0 - headLabel.getWidth() / 2.0;
-        double targetY = nodeBoxes[0].getLayoutY() - 30;
-        headLabel.setLayoutX(targetX);
-        headLabel.setLayoutY(targetY);
-        headLabel.setTranslateX(0);
-        headLabel.setTranslateY(0);
-        headLabel.setVisible(true);
+        ensureNodePresent(list.size() - 1);
+        detachLastBinding();
+        int idx = list.size() - 1;
+        double targetX = nodeBoxes[idx].getLayoutX() + boxWidth / 2.0 - lastLabel.getWidth() / 2.0;
+        double targetY = nodeBoxes[idx].getLayoutY() + boxHeight + 8;
+        lastLabel.setLayoutX(targetX);
+        lastLabel.setLayoutY(targetY);
+        lastLabel.setTranslateX(0);
+        lastLabel.setTranslateY(0);
+        lastLabel.setVisible(true);
     }
 
     private void animateHeadTraversal(int targetIndex, Runnable onFinished) {
@@ -866,17 +875,15 @@ private void insertAtIndex(int value, int index) {
             return;
         }
 
-        // treat traversal as an animation unit
         beginAnimation();
 
         for (int i = 0; i <= targetIndex && i < list.size(); i++) ensureNodePresent(i);
 
         Timeline timeline = new Timeline();
-        double stepMs = 400;
+        double stepMs = 300;
         for (int i = 0; i <= targetIndex; i++) {
             final int idx = i;
             KeyFrame kfOn = new KeyFrame(Duration.millis(i * stepMs), ev -> {
-                headIndex = idx;
                 Rectangle rect = (Rectangle) nodeBoxes[idx].getChildren().get(0);
                 rect.setStroke(Color.web("#FFD54F"));
                 rect.setStrokeWidth(3);
@@ -890,7 +897,6 @@ private void insertAtIndex(int value, int index) {
         }
 
         KeyFrame end = new KeyFrame(Duration.millis((targetIndex + 1) * stepMs), ev -> {
-            // traversal finished
             if (onFinished != null) onFinished.run();
             endAnimation();
         });
@@ -900,50 +906,82 @@ private void insertAtIndex(int value, int index) {
 
     // ---------- Arrow redraw ----------
     private void redrawArrows() {
+        // remove existing arrows (also remove any extra lines stored in head.userData)
         for (Arrow a : arrows) {
             a.unbind();
             workArea.getChildren().removeAll(a.line, a.head);
+            Object extras = a.head.getUserData();
+            if (extras instanceof List) workArea.getChildren().removeAll((List) extras);
         }
         arrows.clear();
 
-        for (int i = 0; i < list.size() - 1; i++) {
-            NodeBox from = nodeBoxes[i];
-            NodeBox to = nodeBoxes[i + 1];
-            // forward arrow (white)
-            Arrow fwd = drawArrow(from, to, Color.WHITE, true);
-            // backward arrow (yellow)
-            Arrow back = drawArrow(to, from, Color.YELLOW, false);
+        int n = list.size();
+        if (n <= 0) {
+            // nothing
+            return;
+        }
+
+        // add arrows for adjacent nodes (0..n-2 -> i -> i+1)
+        for (int i = 0; i < n - 1; i++) {
+            Arrow fwd = drawArrow(nodeBoxes[i], nodeBoxes[i + 1], Color.WHITE, true);
+            Arrow back = drawArrow(nodeBoxes[i + 1], nodeBoxes[i], Color.YELLOW, false);
             arrows.add(fwd);
             arrows.add(back);
         }
 
+        // circular connection from last -> head (n-1 -> 0)
+        if (n >= 1) {
+            NodeBox last = nodeBoxes[n - 1];
+            NodeBox head = nodeBoxes[0];
+
+            Arrow circularFwd = drawCircularArrow(last, head, Color.WHITE);
+            Arrow circularBack = drawCircularArrow(head, last, Color.YELLOW);
+            arrows.add(circularFwd);
+            arrows.add(circularBack);
+        }
+
+        // make nodes and last label on top, but keep arrow heads above nodes
         for (NodeBox nb : nodeBoxes)
             if (workArea.getChildren().contains(nb)) nb.toFront();
-        if (headLabel.isVisible()) headLabel.toFront();
+        if (lastLabel.isVisible()) lastLabel.toFront();
+
+        for (Arrow a : arrows) {
+            if (a.head != null) a.head.toFront();
+        }
     }
 
-
+    /**
+     * Draw regular straight arrows between adjacent boxes.
+     * isForward true => direction left->right (arrow points right)
+     * isForward false => direction right->left (arrow points left)
+     */
     private Arrow drawArrow(NodeBox from, NodeBox to, Color color, boolean isForward) {
-        double padding = 6;
-        double arrowSize = 10;
-        double offset = 6; // vertical offset for parallel arrows
 
-        // Adjust start/end X so arrow doesn't go inside node
+        final double arrowSize = 10;
+        final double offsetY = 16;
+        final double arrowGap = 10;
+
         DoubleBinding startX = Bindings.createDoubleBinding(
-                () -> from.getLayoutX() + from.getTranslateX() + (isForward ? boxWidth + padding : -padding),
+                () -> from.getLayoutX() + from.getTranslateX()
+                        + (isForward ? boxWidth : 0),
                 from.layoutXProperty(), from.translateXProperty()
         );
+
         DoubleBinding startY = Bindings.createDoubleBinding(
-                () -> from.getLayoutY() + from.getTranslateY() + boxHeight / 2.0 + (isForward ? -offset : offset),
+                () -> from.getLayoutY() + from.getTranslateY()
+                        + boxHeight / 2 + (isForward ? -offsetY : offsetY),
                 from.layoutYProperty(), from.translateYProperty()
         );
 
         DoubleBinding endX = Bindings.createDoubleBinding(
-                () -> to.getLayoutX() + to.getTranslateX() + (isForward ? -padding : boxWidth + padding),
+                () -> to.getLayoutX() + to.getTranslateX()
+                        + (isForward ? 0 : boxWidth),
                 to.layoutXProperty(), to.translateXProperty()
         );
+
         DoubleBinding endY = Bindings.createDoubleBinding(
-                () -> to.getLayoutY() + to.getTranslateY() + boxHeight / 2.0 + (isForward ? -offset : offset),
+                () -> to.getLayoutY() + to.getTranslateY()
+                        + boxHeight / 2 + (isForward ? -offsetY : offsetY),
                 to.layoutYProperty(), to.translateYProperty()
         );
 
@@ -955,35 +993,148 @@ private void insertAtIndex(int value, int index) {
         line.setStroke(color);
         line.setStrokeWidth(2);
 
-        // Arrowhead polygon — rotate for backward arrow
-        Polygon head = new Polygon();
-        if (isForward) {
-            head.getPoints().addAll(
-                    0.0, 0.0,
-                    -arrowSize, -arrowSize / 2.0,
-                    -arrowSize, arrowSize / 2.0
-            );
-        } else {
-            // backward arrow points left → flip
-            head.getPoints().addAll(
-                    0.0, 0.0,
-                    arrowSize, -arrowSize / 2.0,
-                    arrowSize, arrowSize / 2.0
-            );
-        }
-
+        Polygon head = new Polygon(
+                0.0, 0.0,
+                -arrowSize, -arrowSize / 2,
+                -arrowSize, arrowSize / 2
+        );
         head.setFill(color);
-        head.layoutXProperty().bind(endX);
+
+        DoubleBinding headX = Bindings.createDoubleBinding(
+                () -> endX.get() + (isForward ? -arrowGap : arrowGap),
+                endX
+        );
+
+        head.layoutXProperty().bind(headX);
         head.layoutYProperty().bind(endY);
 
-        workArea.getChildren().addAll(line, head);
+        head.rotateProperty().bind(
+                Bindings.createDoubleBinding(() -> (double) (isForward ? 0 : 180))
+        );
 
+        workArea.getChildren().addAll(line, head);
         return new Arrow(line, head, startX, startY, endX, endY);
     }
 
 
+    /**
+     * Draw a circular arrow (curved visual) from 'from' to 'to' above the row.
+     * The arrow head will be rotated to match the direction. This implementation
+     * creates a small vertical-up, horizontal-top, vertical-down polyline look
+     * using three Line segments. The horizontal segment is returned as a.line so
+     * the existing Arrow removal logic can remove the main shape; vertical
+     * segments are attached to the head's userData and removed together.
+//     */
+
+    private Arrow drawCircularArrow(NodeBox from, NodeBox to, Color color) {
+
+        final double arrowSize = 10;
+
+        // different heights so white/yellow arcs don’t overlap
+        final double liftHigh = 110;
+        final double liftLow  = 70;
+
+        // center Y of boxes
+        DoubleBinding midYFrom = Bindings.createDoubleBinding(
+                () -> from.getLayoutY() + from.getTranslateY() + boxHeight / 2.0,
+                from.layoutYProperty(), from.translateYProperty());
+
+        DoubleBinding midYTo = Bindings.createDoubleBinding(
+                () -> to.getLayoutY() + to.getTranslateY() + boxHeight / 2.0,
+                to.layoutYProperty(), to.translateYProperty());
+
+        // X positions (slightly inside boxes)
+        DoubleBinding sx = Bindings.createDoubleBinding(
+                () -> from.getLayoutX() + from.getTranslateX() + boxWidth - 6,
+                from.layoutXProperty(), from.translateXProperty());
+
+        DoubleBinding ex = Bindings.createDoubleBinding(
+                () -> to.getLayoutX() + to.getTranslateX() + 6,
+                to.layoutXProperty(), to.translateXProperty());
+
+        // direction (forward / backward)
+        BooleanBinding forward = Bindings.createBooleanBinding(
+                () -> (from.getLayoutX() + from.getTranslateX())
+                        < (to.getLayoutX() + to.getTranslateX()),
+                from.layoutXProperty(), from.translateXProperty(),
+                to.layoutXProperty(), to.translateXProperty());
+
+        // choose arc height
+        DoubleBinding lift = Bindings.createDoubleBinding(
+                () -> forward.get() ? liftHigh : liftLow,
+                forward);
+
+        DoubleBinding syUp = Bindings.createDoubleBinding(
+                () -> midYFrom.get() - lift.get(), midYFrom, lift);
+
+        DoubleBinding eyUp = Bindings.createDoubleBinding(
+                () -> midYTo.get() - lift.get(), midYTo, lift);
+
+        // ───────── vertical from FROM node
+        Line vLeft = new Line();
+        vLeft.startXProperty().bind(sx);
+        vLeft.endXProperty().bind(sx);
+        vLeft.startYProperty().bind(midYFrom);
+        vLeft.endYProperty().bind(syUp);
+        vLeft.setStroke(color);
+        vLeft.setStrokeWidth(2);
+
+        // ───────── top horizontal
+        Line hTop = new Line();
+        hTop.startXProperty().bind(sx);
+        hTop.startYProperty().bind(syUp);
+        hTop.endXProperty().bind(ex);
+        hTop.endYProperty().bind(eyUp);
+        hTop.setStroke(color);
+        hTop.setStrokeWidth(2);
+
+        // ───────── vertical into TO node
+        Line vRight = new Line();
+        vRight.startXProperty().bind(ex);
+        vRight.endXProperty().bind(ex);
+        vRight.startYProperty().bind(eyUp);
+
+        vRight.endYProperty().bind(
+                midYTo.subtract(boxHeight / 2 + 12)
+        );
+
+
+        vRight.setStroke(color);
+        vRight.setStrokeWidth(2);
+
+        // ───────── ARROW HEAD (perfect 90°)
+        Polygon head = new Polygon(
+                0, 0,
+                -arrowSize, -arrowSize / 2,
+                -arrowSize,  arrowSize / 2
+        );
+        head.setFill(color);
+        final double headXOffset = 5; // tweak: 4–10 looks good
+
+        head.layoutXProperty().bind(
+                ex.add(headXOffset)
+        );
+
+        head.layoutYProperty().bind(
+                midYTo.subtract(boxHeight / 2 + 12)
+        );
+
+        // force exact vertical rotation
+        head.rotateProperty().bind(
+                Bindings.when(forward).then(90.0).otherwise(90.0)
+        );
+
+        workArea.getChildren().addAll(vLeft, hTop, vRight, head);
+
+        // store extra segments for cleanup
+        head.setUserData(Arrays.asList(vLeft, vRight));
+
+        // return horizontal segment as main Arrow line
+        return new Arrow(hTop, head, sx, syUp, ex, eyUp);
+    }
 
     public HBox getRoot() {
         return root;
     }
+
 }

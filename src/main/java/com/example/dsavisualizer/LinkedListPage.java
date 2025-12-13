@@ -110,7 +110,7 @@ public class LinkedListPage {
         doublyLB.setOnAction(e->showDoublyListVisualization());
 
         Button circularDoublyLB=menuButton("Circular Doubly L.L.");
-        //circularDoublyLB.setOnAction(e->showDoublyCircularListVisualization());
+        circularDoublyLB.setOnAction(e->showDoublyCircularListVisualization());
 
         rightSide.getChildren().addAll(doublyLB,circularDoublyLB);
 
@@ -164,13 +164,12 @@ public class LinkedListPage {
         Scene scene = new Scene(linearCircularListVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
-
+*/
     private void showDoublyCircularListVisualization(){
         DoublyCircularListVisualization doublyCircularListVisualization=new DoublyCircularListVisualization();
         Scene scene = new Scene(doublyCircularListVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
-*/
 
 
     public VBox getRoot(){return root;}
