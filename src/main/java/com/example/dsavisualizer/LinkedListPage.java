@@ -96,7 +96,7 @@ public class LinkedListPage {
         linearLB.setOnAction(e->showLinearListVisualization());
 
         Button circularLB=menuButton("Circular Linear L.L");
-        //circularLB.setOnAction(e->showLinearCircularListVisualization());
+        circularLB.setOnAction(e->showLinearCircularListVisualization());
 
         leftSide.getChildren().addAll(linearLB,circularLB);
 
@@ -158,13 +158,13 @@ public class LinkedListPage {
         Scene scene = new Scene(doublyListVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
-/*
+
     private void showLinearCircularListVisualization(){
         LinearCircularListVisualization linearCircularListVisualization=new LinearCircularListVisualization();
         Scene scene = new Scene(linearCircularListVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
-*/
+
     private void showDoublyCircularListVisualization(){
         DoublyCircularListVisualization doublyCircularListVisualization=new DoublyCircularListVisualization();
         Scene scene = new Scene(doublyCircularListVisualization.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);

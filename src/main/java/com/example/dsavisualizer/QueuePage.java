@@ -95,13 +95,13 @@ public class QueuePage {
         Button linearQB=menuButton("Linear Queue");
         linearQB.setOnAction(e->showLinearQueueVisualization());
 
-        Button priorityQB=menuButton("Priority Queue");
+        Button doubleEndedLinearQB=menuButton("Double Ended Linear Queue");
+        doubleEndedLinearQB.setOnAction(e->showDELinearQueueVisualization());
+
+        //Button priorityQB=menuButton("Priority Queue");
         //priorityQB.setOnAction(e->showPriorityQueueVisualization());
 
-        Button doubleEndedCircularQB=menuButton("Double Ended Circular Queue");
-        doubleEndedCircularQB.setOnAction(e->showDECircularQueueVisualization());
-
-        leftSide.getChildren().addAll(linearQB,priorityQB,doubleEndedCircularQB);
+        leftSide.getChildren().addAll(linearQB,doubleEndedLinearQB);
 
 
         //RIGHT SIDE HERE
@@ -112,11 +112,10 @@ public class QueuePage {
         Button circularQB=menuButton("Circular Queue");
         circularQB.setOnAction(e->showCircularQueueVisualization());
 
-        Button doubleEndedLinearQB=menuButton("Double Ended Linear Queue");
-        doubleEndedLinearQB.setOnAction(e->showDELinearQueueVisualization());
+        Button doubleEndedCircularQB=menuButton("Double Ended Circular Queue");
+        doubleEndedCircularQB.setOnAction(e->showDECircularQueueVisualization());
 
-        rightSide.getChildren().addAll(circularQB,doubleEndedLinearQB);
-
+        rightSide.getChildren().addAll(circularQB,doubleEndedCircularQB);
 
 
         root.getChildren().addAll(leftSide,rightSide);

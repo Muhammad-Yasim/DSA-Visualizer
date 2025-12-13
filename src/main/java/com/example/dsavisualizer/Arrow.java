@@ -4,7 +4,7 @@ import javafx.beans.binding.DoubleBinding;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 
-public class Arrow {
+public class Arrow {        //This class is made completely by using CGPT
     Line line;
     Polygon head;
     DoubleBinding sX, sY, eX, eY;

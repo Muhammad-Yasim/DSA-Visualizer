@@ -2,7 +2,6 @@ package com.example.dsavisualizer;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.chart.ValueAxis;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -14,9 +13,8 @@ public class LinearQueueVisualization {
 
     private QueueLinear queue;
     private NodeBox[] nodeBoxes;
-    private final int QUEUE_SIZE = 7; // same as your queue size
+    private final int QUEUE_SIZE = 7;
 
-    double w,h;
     private Pane workArea;
     private HBox root;
     private Label rearLabel,frontLabel;
@@ -38,7 +36,6 @@ public class LinearQueueVisualization {
         VBox controlPanel = createControlPanel();
 
         //Make screen take all remaining space
-       // screen.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(screen, javafx.scene.layout.Priority.ALWAYS);
         screen.setFillWidth(true);
 
@@ -54,21 +51,7 @@ public class LinearQueueVisualization {
         Pane workArea=createWorkArea();
         TextArea consoleArea=createConsole();
 
-
-        //Make screen take all remaining space
-       // VBox.setVgrow(workArea, javafx.scene.layout.Priority.ALWAYS);
-       // workArea.setFillHeight(true);
-
         root.getChildren().setAll(header,workArea,consoleArea);
-
-        javafx.application.Platform.runLater(() -> {
-            w = workArea.getWidth();
-            h = workArea.getHeight();
-
-            System.out.println("WORKAREA WIDTH = " + w);
-            System.out.println("WORKAREA HEIGHT = " + h);
-        });
-
         return root;
     }
 
@@ -114,7 +97,7 @@ public class LinearQueueVisualization {
         queue = new QueueLinear();
         nodeBoxes = new NodeBox[QUEUE_SIZE];
 
-        // Place all boxes initially with null (empty value)
+        //Place all boxes initially with null (empty value)
         double startX = 280;
         double startY = 290;
         double spacing = 90;
@@ -126,19 +109,18 @@ public class LinearQueueVisualization {
             workArea.getChildren().add(nodeBoxes[i]);
         }
 
-        // Create REAR label once
+
         rearLabel = new Label("rear");
         rearLabel.setStyle("-fx-font-size: 22px; -fx-text-fill: white;");
         rearLabel.setLayoutX(startX);
-        rearLabel.setLayoutY(startY - 40);  // above index 0
-        rearLabel.setVisible(false);        // hide initially
+        rearLabel.setLayoutY(startY - 40);
+        rearLabel.setVisible(false);
         workArea.getChildren().add(rearLabel);
 
-        // FRONT label (created once)
         frontLabel = new Label("front");
         frontLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
         frontLabel.setLayoutX(startX);
-        frontLabel.setLayoutY(startY + 100);   // place below index 0
+        frontLabel.setLayoutY(startY + 100);
         frontLabel.setVisible(false);
         workArea.getChildren().add(frontLabel);
 
@@ -195,24 +177,13 @@ public class LinearQueueVisualization {
                 int value = Integer.parseInt(text);
                 enqueue(value);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid value");
+                log("Invalid value");
             }
         });
 
-       /* enqueueButton.setOnKeyPressed(e -> {
-            String text = valueEnq.getText();
-            if (text.isEmpty()) return;
-            try {
-                int value = Integer.parseInt(text);
-                enqueue(value);
-            } catch (NumberFormatException ex) {
-                System.out.println("Invalid value");
-            }
-        });*/
 
         Button dequeueButton=controlPanelButton("- Dequeue");
         dequeueButton.setOnAction(e -> dequeue());
-
 
         root.getChildren().addAll(titleLabel,valueLabel,valueEnq,enqueueButton,dequeueButton);
         return root;
@@ -232,7 +203,7 @@ public class LinearQueueVisualization {
 
         rearLabel.setVisible(true);
 
-        // FIRST ENQUEUE
+
         if (queue.size() == 1) {
             frontLabel.setVisible(true);
 
@@ -245,46 +216,8 @@ public class LinearQueueVisualization {
         double newY = 250;
         moveRearPointer(newX, newY);
 
-        // LOG HERE
         log(value + " is enqueued");
     }
-
-    /*private void enqueue(int value) {
-        queue.enqueue(value);
-
-        // Fill the first null box from front to rear
-        //int front = queue.frontIndex(); // add getter in QueueLinear
-        int rear = queue.rearIndex();   // add getter in QueueLinear
-
-        //if (rear >= 0 && rear < nodeBoxes.length) {
-            nodeBoxes[rear].setValue(value); // display value in box
-        //}
-
-       // Label label= new Label("rear=");
-        //label.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
-        //label.setLayoutX(290 + rear * 90);
-        //label.setLayoutY(250);
-
-        rearLabel.setVisible(true);
-
-        // FIRST ENQUEUE → show front pointer at index 0
-        if (queue.size() == 1) {
-            frontLabel.setVisible(true);
-
-            double frontX = 305;     // same as box 0
-            double frontY = 390;     // below index 0 (290 + 100)
-
-            moveFrontPointer(frontX, frontY);
-        }
-
-
-        double newX = 305 + rear * 90;  // same as box position
-        double newY = 250;              // fixed height
-
-        moveRearPointer(newX, newY);
-
-        //workArea.getChildren().add(rearLabel);
-    }*/
 
     private void moveRearPointer(double x, double y) {
         TranslateTransition tt = new TranslateTransition(Duration.seconds(0.5), rearLabel);
@@ -299,59 +232,6 @@ public class LinearQueueVisualization {
     }
 
 
-   /* private void dequeue() {
-        int val = queue.dequeue();
-
-        if (val == -1) return; // empty queue
-
-        // Set first box to null without removing
-        int front = queue.frontIndex(); // add getter in QueueLinear
-        //int rear = queue.rearIndex();   // add getter in QueueLinear
-
-        // Optional: if front > rear after dequeue, reset all boxes
-        if (queue.isEmpty()) {
-            for (NodeBox box : nodeBoxes) {
-                box.setValue("null");
-            }
-        } else {
-            // set the box that was dequeued to null
-            nodeBoxes[front - 1].setValue("null"); // front moved forward in queue
-        }
-    }*/
-
-   /* private void dequeue() {
-        int val = queue.dequeue();
-        if (val == -1) return; // empty queue
-
-        int front = queue.frontIndex();  // this is NEW front after dequeue
-
-        // Before moving front pointer, clear the box that was dequeued:
-        int clearedIndex = front - 1;    // previous front
-        if (clearedIndex >= 0)
-            nodeBoxes[clearedIndex].setValue("null");
-
-        // Queue still has elements?
-        if (!queue.isEmpty()) {
-
-            // Show pointer if not visible
-            frontLabel.setVisible(true);
-
-            // Move label to new front
-            double newX = 305 + front * 90;
-            double newY = 390;
-
-            moveFrontPointer(newX, newY);
-        }
-        else {
-            // Queue empty → hide pointers
-            frontLabel.setVisible(false);
-            rearLabel.setVisible(false);
-
-            // Clear boxes
-            for (NodeBox box : nodeBoxes)
-                box.setValue("null");
-        }
-    }*/
 
     private void dequeue() {
 
@@ -367,7 +247,6 @@ public class LinearQueueVisualization {
         if (clearedIndex >= 0)
             nodeBoxes[clearedIndex].setValue("null");
 
-        // LOG OPERATION
         log(removed + " is dequeued");
 
         if (!queue.isEmpty()) {
@@ -388,9 +267,6 @@ public class LinearQueueVisualization {
         }
     }
 
-
-
-
     private void moveFrontPointer(double x, double y) {
         TranslateTransition tt = new TranslateTransition(Duration.seconds(0.5), frontLabel);
 
@@ -403,9 +279,6 @@ public class LinearQueueVisualization {
         tt.play();
     }
 
-
-
-
     private Button controlPanelButton(String string){
         Button button = new Button(string);
         button.setPrefWidth(130);
@@ -417,8 +290,6 @@ public class LinearQueueVisualization {
         button.setOnMouseExited(e-> {
             button.setStyle("-fx-background-color: #9FB873; -fx-border-color: transparent; -fx-text-fill: white; -fx-font-size: 15px; -fx-cursor: hand;");
         });
-        //button.setOnAction(e-> App.showLandingPage());
-
         return button;
     }
 

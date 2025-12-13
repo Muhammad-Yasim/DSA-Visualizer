@@ -10,12 +10,11 @@ public class QueueDoublyCircular {
             arr = new int[capacity];
         }
 
-        // ---------------- ENQUEUE FRONT ----------------
         public void enqueueFront(int value) {
             if (size == arr.length)
                 System.out.println("Deque is full");
             else {
-                if (front == -1) { // empty queue
+                if (front == -1) {
                     front = rear = 0;
                 } else {
                     front = (front - 1 + arr.length) % arr.length;
@@ -25,7 +24,6 @@ public class QueueDoublyCircular {
             }
         }
 
-        // ---------------- ENQUEUE BACK ----------------
         public void enqueueBack(int value) {
             if (size == arr.length)
                 System.out.println("Deque is full");
@@ -40,7 +38,6 @@ public class QueueDoublyCircular {
             }
         }
 
-        // ---------------- DEQUEUE FRONT ----------------
         public int dequeueFront() {
             if (size == 0) {
                 System.out.println("Deque is empty");
@@ -54,7 +51,6 @@ public class QueueDoublyCircular {
             return val;
         }
 
-        // ---------------- DEQUEUE BACK ----------------
         public int dequeueBack() {
             if (size == 0) {
                 System.out.println("Deque is empty");
@@ -72,27 +68,12 @@ public class QueueDoublyCircular {
         return size;
     }
 
-    // ---------------- GET FRONT INDEX ----------------
     public int frontIndex() {
         return front;
     }
 
-    // ---------------- GET REAR INDEX ----------------
     public int rearIndex() {
         return rear;
     }
 
-        public void display() {
-            if (size == 0) {
-                System.out.println("Deque is empty");
-                return;
-            }
-            System.out.print("Deque (Front → Back): ");
-            int i = front;
-            for (int count = 0; count < size; count++) {
-                System.out.print(arr[i] + " ");
-                i = (i + 1) % arr.length;
-            }
-            System.out.println();
-        }
-    }
+}

@@ -165,7 +165,7 @@ public class DoublyListVisualization {
                 int value = Integer.parseInt(text);
                 insertAtStart(value);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid value");
+                log("Invalid value");
             }
         });
 
@@ -178,7 +178,7 @@ public class DoublyListVisualization {
                 int value = Integer.parseInt(text);
                 insertAtEnd(value);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid value");
+                log("Invalid value");
             }
         });
 
@@ -213,7 +213,7 @@ public class DoublyListVisualization {
                 int index = Integer.parseInt(idx);
                 insertAtIndex(value, index);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid value or index");
+                log("Invalid value or index");
             }
         });
 
@@ -226,7 +226,7 @@ public class DoublyListVisualization {
                 int index = Integer.parseInt(idx);
                 deleteAtIndex(index);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid index");
+                log("Invalid index");
             }
         });
 
@@ -255,7 +255,6 @@ public class DoublyListVisualization {
         if (animCount == 0 && controlPanel != null) controlPanel.setDisable(false);
     }
 
-    // ---------- HEAD logic ----------
     private void attachHeadToIndex(int idx) {
         if (idx < 0 || idx >= QUEUE_SIZE) return;
         detachHeadBinding();
@@ -327,7 +326,6 @@ public class DoublyListVisualization {
         tt.play();
     }
 
-    // ---------- NodeBox visual helpers ----------
     private void ensureNodePresent(int i) {
         if (i < 0 || i >= QUEUE_SIZE) return;
         if (!workArea.getChildren().contains(nodeBoxes[i])) {
@@ -360,7 +358,6 @@ public class DoublyListVisualization {
         }
     }
 
-    // ---------- Insert/Delete operations ----------
     private boolean isFull() {
         return list.size() >= QUEUE_SIZE;
     }
@@ -371,7 +368,6 @@ public class DoublyListVisualization {
             return;
         }
 
-        // ========= CASE 1: EMPTY LIST =========
         if (list.size() == 0) {
             NodeBox temp = new NodeBox(value);
             double spawnX = startX + 0 * spacing;
@@ -412,14 +408,11 @@ public class DoublyListVisualization {
             return;
         }
 
-        // ========= CASE 2: NON-EMPTY LIST =========
         // ensure visuals exist for all nodes
         for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
 
-        // Attach head to the current first node so it moves "with" it while shifting
         attachHeadToIndex(0);
 
-        // Shift visuals to the right for existing nodes (sequential as before)
         SequentialTransition shiftAll = new SequentialTransition();
         for (int i = list.size() - 1; i >= 0; i--) {
             NodeBox nb = nodeBoxes[i];
@@ -430,7 +423,6 @@ public class DoublyListVisualization {
             shiftAll.getChildren().add(tt);
         }
 
-        // Create the new node box above the first slot (temporary)
         NodeBox newBox = new NodeBox(value);
         double spawnX = startX + 0 * spacing;
         double spawnY = startY - 160;
@@ -474,10 +466,6 @@ public class DoublyListVisualization {
 
             // remove temporary newBox
             workArea.getChildren().remove(newBox);
-
-            // Now head is still attached to the old first node (which moved right).
-            // Animate head from old-node position to above the newly inserted node at index 0.
-            // Detach binding and animate to index 0, then finalize.
             animateHeadMoveToIndex(0, Duration.seconds(0.18), () -> {
                 headIndex = 0;
                 redrawArrows();
@@ -540,7 +528,7 @@ private void insertAtIndex(int value, int index) {
     for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
 
     animateHeadTraversal(index, () -> {
-        // 1. shift nodes from end to index
+        //shift nodes from end to index
         SequentialTransition shiftSeq = new SequentialTransition();
         for (int i = list.size() - 1; i >= index; i--) {
             NodeBox nb = nodeBoxes[i];
@@ -551,7 +539,7 @@ private void insertAtIndex(int value, int index) {
 
         beginAnimation();
         shiftSeq.setOnFinished(ev -> {
-            // 2. now slot is free, create new node above and drop it
+            //now slot is free, create new node above and drop it
             double spawnX = startX + index * spacing;
             double spawnY = startY - 160;
             NodeBox newBox = new NodeBox(value);
@@ -564,10 +552,10 @@ private void insertAtIndex(int value, int index) {
             drop.setByY(startY - spawnY);
 
             drop.setOnFinished(dropEv -> {
-                // commit to model
+                //commit to model
                 list.insertAtLocation(value, index);
 
-                // update all nodeBoxes values & positions
+                //update all nodeBoxes values & positions
                 for (int i = 0; i < list.size(); i++) {
                     ensureNodePresent(i);
                     NodeBox nb = nodeBoxes[i];
@@ -577,7 +565,7 @@ private void insertAtIndex(int value, int index) {
                     nb.setValue(list.get(i));
                 }
 
-                // remove temp nodeBox
+                //remove temp nodeBox
                 workArea.getChildren().remove(newBox);
                 redrawArrows();
                 log(value + " inserted at index " + index);
@@ -599,7 +587,6 @@ private void insertAtIndex(int value, int index) {
             return;
         }
 
-        // If only one node, keep previous flow (remove then vanish, hide head)
         if (list.size() == 1) {
             int removed = list.deleteFromBeginning();
 
@@ -634,18 +621,10 @@ private void insertAtIndex(int value, int index) {
             return;
         }
 
-        // For size > 1: first animate head to second node, THEN delete first node (as you requested)
-        // Ensure nodes present
         for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
-
-        beginAnimation(); // disable controls during head move + subsequent delete animation
-
-        // animate head to node index 1
+        beginAnimation(); //disable controls
         animateHeadMoveToIndex(1, Duration.seconds(0.18), () -> {
-            // now proceed to delete the first node (we remove from model and play vanish+shift)
             int removed = list.deleteFromBeginning();
-
-            // ensure visuals; target is current nodeBoxes[0]
             ensureNodePresent(0);
             NodeBox target = nodeBoxes[0];
 
@@ -696,7 +675,7 @@ private void insertAtIndex(int value, int index) {
 
                 headIndex = list.isEmpty() ? -1 : 0;
 
-                // After removal and shifting, move head to new first node (index 0) smoothly
+                // After removal and shifting, move head to new first node smoothly
                 animateHeadMoveToIndex(0, Duration.seconds(0.12), () -> {
                     redrawArrows();
                     log(removed + " deleted from start");
@@ -773,7 +752,7 @@ private void insertAtIndex(int value, int index) {
         for (int i = 0; i < list.size(); i++)
             ensureNodePresent(i);
 
-        // traversal is now treated as an animation (prevents interleaving)
+        // traversal is now treated as an animation
         animateHeadTraversal(index, () -> {
             int removed = list.deleteAtLocation(index);
             ensureNodePresent(index);
@@ -843,7 +822,6 @@ private void insertAtIndex(int value, int index) {
 
     private void updateHeadPosition() {
         if (list.isEmpty()) {
-            // hide
             detachHeadBinding();
             headLabel.setVisible(false);
             return;
@@ -898,7 +876,6 @@ private void insertAtIndex(int value, int index) {
         timeline.play();
     }
 
-    // ---------- Arrow redraw ----------
     private void redrawArrows() {
         for (Arrow a : arrows) {
             a.unbind();
@@ -909,9 +886,7 @@ private void insertAtIndex(int value, int index) {
         for (int i = 0; i < list.size() - 1; i++) {
             NodeBox from = nodeBoxes[i];
             NodeBox to = nodeBoxes[i + 1];
-            // forward arrow (white)
             Arrow fwd = drawArrow(from, to, Color.WHITE, true);
-            // backward arrow (yellow)
             Arrow back = drawArrow(to, from, Color.YELLOW, false);
             arrows.add(fwd);
             arrows.add(back);
@@ -926,9 +901,9 @@ private void insertAtIndex(int value, int index) {
     private Arrow drawArrow(NodeBox from, NodeBox to, Color color, boolean isForward) {
         double padding = 6;
         double arrowSize = 10;
-        double offset = 6; // vertical offset for parallel arrows
+        double offset = 6; //vertical offset for parallel arrows
 
-        // Adjust start/end X so arrow doesn't go inside node
+        //Adjust start/end X so arrow doesn't go inside node
         DoubleBinding startX = Bindings.createDoubleBinding(
                 () -> from.getLayoutX() + from.getTranslateX() + (isForward ? boxWidth + padding : -padding),
                 from.layoutXProperty(), from.translateXProperty()
@@ -954,8 +929,6 @@ private void insertAtIndex(int value, int index) {
         line.endYProperty().bind(endY);
         line.setStroke(color);
         line.setStrokeWidth(2);
-
-        // Arrowhead polygon — rotate for backward arrow
         Polygon head = new Polygon();
         if (isForward) {
             head.getPoints().addAll(
@@ -964,7 +937,6 @@ private void insertAtIndex(int value, int index) {
                     -arrowSize, arrowSize / 2.0
             );
         } else {
-            // backward arrow points left → flip
             head.getPoints().addAll(
                     0.0, 0.0,
                     arrowSize, -arrowSize / 2.0,

@@ -93,7 +93,7 @@ public class DECircularQueueVisualization {
         queue = new QueueDoublyCircular(QUEUE_SIZE);
         nodeBoxes = new NodeBox[QUEUE_SIZE];
 
-        // Place nodes in a circle
+        //Place nodes in a circle
         for (int i = 0; i < QUEUE_SIZE; i++) {
             double angleDeg = -90 + i * (360.0 / QUEUE_SIZE);
             double angleRad = Math.toRadians(angleDeg);
@@ -107,7 +107,6 @@ public class DECircularQueueVisualization {
             workArea.getChildren().add(nodeBoxes[i]);
         }
 
-        // FRONT label
         frontLabel = new Label("front");
         frontLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
         frontLabel.setLayoutX(nodeBoxes[0].getLayoutX());
@@ -115,7 +114,6 @@ public class DECircularQueueVisualization {
         frontLabel.setVisible(false);
         workArea.getChildren().add(frontLabel);
 
-        // REAR label
         rearLabel = new Label("rear");
         rearLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
         rearLabel.setLayoutX(nodeBoxes[0].getLayoutX());
@@ -157,13 +155,25 @@ public class DECircularQueueVisualization {
         Button enqFront = controlPanelButton("+ Enqueue Front");
         enqFront.setOnAction(e -> {
             String text = valueField.getText();
-            if (!text.isEmpty()) enqueueFront(Integer.parseInt(text));
+            if (!text.isEmpty()) {
+                try {
+                    enqueueFront(Integer.parseInt(text));
+                }catch (NumberFormatException ex) {
+                    log("Invalid value");
+                }
+            }
         });
 
         Button enqBack = controlPanelButton("+ Enqueue Back");
         enqBack.setOnAction(e -> {
             String text = valueField.getText();
-            if (!text.isEmpty()) enqueueBack(Integer.parseInt(text));
+            if (!text.isEmpty()) {
+                try {
+                    enqueueBack(Integer.parseInt(text));
+                } catch (NumberFormatException ex) {
+                    log("Invalid value");
+                }
+            }
         });
 
         Button deqFront = controlPanelButton("- Dequeue Front");
@@ -188,12 +198,9 @@ public class DECircularQueueVisualization {
         button.setOnMouseExited(e-> {
             button.setStyle("-fx-background-color: #9FB873; -fx-border-color: transparent; -fx-text-fill: white; -fx-font-size: 15px; -fx-cursor: hand;");
         });
-        //button.setOnAction(e-> App.showLandingPage());
 
         return button;
     }
-
-    // ---------------------- OPERATIONS ----------------------
 
     private void enqueueFront(int value) {
         if (queue.size() == QUEUE_SIZE) {
@@ -250,8 +257,6 @@ public class DECircularQueueVisualization {
         if (queue.size() > 0) moveRearPointerToIndex(queue.rearIndex());
         else resetPointers();
     }
-
-    // ---------------------- POINTERS ----------------------
 
     private void moveFrontPointerToIndex(int index) {
         Point2D target = nodeCenter(index);
@@ -313,5 +318,3 @@ public class DECircularQueueVisualization {
         return root;
     }
 }
-
-

@@ -19,17 +19,14 @@ public class LandingPage {
     }
 
     private void createUI() {
-
         root = new VBox();
         root.setAlignment(Pos.CENTER);
         root.setSpacing(20);
         root.setPadding(new Insets(20));
         root.setStyle("-fx-background-color: #2E3A33;");
 
-
         VBox menuOptions = createMenuOptions();
         HBox exit = createExit();
-
 
         root.getChildren().addAll(menuOptions,exit);
     }
@@ -38,7 +35,6 @@ public class LandingPage {
         VBox root = new VBox(55);
         root.setPrefHeight(700);
         root.setAlignment(Pos.CENTER);
-
 
         //TITLE HERE
         VBox labels=new VBox();
@@ -52,7 +48,6 @@ public class LandingPage {
 
         labels.getChildren().addAll(titleLabel,descriptionLabel);
 
-
         //BUTTONS HERE
         VBox buttons=new VBox(20);
         buttons.setAlignment(Pos.CENTER);
@@ -64,7 +59,6 @@ public class LandingPage {
         linkListButton.setOnAction(e->showLinkedListPage());
 
         buttons.getChildren().addAll(queueButton,linkListButton);
-
 
 
         root.getChildren().addAll(labels,buttons);
@@ -132,8 +126,6 @@ public class LandingPage {
         Scene scene = new Scene(addLinkedListPage.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
-
-
 
     public VBox getRoot(){return root;}
 }

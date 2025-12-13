@@ -1,4 +1,3 @@
-
 package com.example.dsavisualizer;
 
 import javafx.animation.TranslateTransition;
@@ -17,7 +16,6 @@ public class DELinearQueueVisualization {
     private double startX = 280;
     private double startY = 290;
     private double boxWidth = 90;
-    private double boxHeight = 60;
 
     private Pane workArea;
     private HBox root;
@@ -143,13 +141,25 @@ public class DELinearQueueVisualization {
 
         Button enqFrontButton = controlPanelButton("+ Enqueue Front");
         enqFrontButton.setOnAction(e -> {
-            if (!valueEnq.getText().isEmpty()) enqueueFront(Integer.parseInt(valueEnq.getText()));
+            if (!valueEnq.getText().isEmpty()) {
+                try{
+                enqueueFront(Integer.parseInt(valueEnq.getText()));
+                }catch(NumberFormatException ex) {
+                    log("Invalid value");
+                }
+            }
         });
 
 
         Button enqBackButton = controlPanelButton("+ Enqueue Back");
         enqBackButton.setOnAction(e -> {
-            if (!valueEnq.getText().isEmpty()) enqueueBack(Integer.parseInt(valueEnq.getText()));
+            if (!valueEnq.getText().isEmpty()){
+                try {
+                    enqueueBack(Integer.parseInt(valueEnq.getText()));
+                }catch (NumberFormatException ex) {
+                    log("Invalid value");
+                }
+            }
         });
 
         Button deqFrontButton = controlPanelButton("- Dequeue Front");
@@ -158,14 +168,9 @@ public class DELinearQueueVisualization {
         Button deqBackButton = controlPanelButton("- Dequeue Back");
         deqBackButton.setOnAction(e -> dequeueBack());
 
-
-
-
         root.getChildren().addAll(titleLabel, valueLabel, valueEnq, enqFrontButton,enqBackButton,deqFrontButton,deqBackButton);
         return root;
     }
-
-    // ---------------- OPERATIONS ----------------
 
     private void enqueueFront(int value) {
         if(queue.isFull()){

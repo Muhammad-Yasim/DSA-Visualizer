@@ -12,7 +12,7 @@ public class ListCircularDoubly {
 
         last = temp;
         temp.next = temp;
-        temp.prev = temp;   // ✅ maintain prev
+        temp.prev = temp;
     }
 
     public void insertAtBeginning(int data){
@@ -26,7 +26,7 @@ public class ListCircularDoubly {
         temp.next = last.next;
         temp.prev = last;
 
-        last.next.prev = temp;   // ✅
+        last.next.prev = temp;
         last.next = temp;
     }
 
@@ -41,7 +41,7 @@ public class ListCircularDoubly {
         temp.next = last.next;
         temp.prev = last;
 
-        last.next.prev = temp;   // ✅
+        last.next.prev = temp;
         last.next = temp;
         last = temp;
     }
@@ -104,7 +104,7 @@ public class ListCircularDoubly {
                 temp.next = p.next;
                 temp.prev = p;
 
-                p.next.prev = temp;   // ✅
+                p.next.prev = temp;
                 p.next = temp;
 
                 if(p == last)
@@ -122,7 +122,7 @@ public class ListCircularDoubly {
         if (last == null)
             throw new RuntimeException("List not existed");
 
-        // single node case
+
         if (last.next == last && last.data == item) {
             int deletedData = last.data;
             last = null;

@@ -29,27 +29,16 @@ public class LinearListVisualization {
     private Pane workArea;
     private HBox root;
     private TextArea console;
-
-    // control panel reference
     private VBox controlPanel;
-
-    // animation counter (replaces boolean animating)
     private int animCount = 0;
 
-    // visual constants
     private double startX = 205;
     private double startY = 290;
     private double boxWidth = 90;
     private double boxHeight = 60;
-    private double spacing = boxWidth + 50; // 120
-
-    // arrows
+    private double spacing = boxWidth + 50;
     private final List<Arrow> arrows = new ArrayList<>();
-
-    // internal head index
     private int headIndex = -1;
-
-    // head visual + binding references
     private Label headLabel;
     private DoubleBinding headXBinding = null;
     private DoubleBinding headYBinding = null;
@@ -124,7 +113,7 @@ public class LinearListVisualization {
         list = new ListLinear();
         nodeBoxes = new NodeBox[QUEUE_SIZE];
 
-        // create nodeBoxes but DO NOT add them to workArea initially
+        //create nodeBoxes
         for (int i = 0; i < QUEUE_SIZE; i++) {
             nodeBoxes[i] = new NodeBox("null");
             nodeBoxes[i].setLayoutX(startX + i * spacing);
@@ -150,7 +139,6 @@ public class LinearListVisualization {
         return console;
     }
 
-    // simplified log (no front/rear)
     private void log(String msg) {
         console.appendText(msg + "\n\n");
     }
@@ -175,14 +163,14 @@ public class LinearListVisualization {
         Button insertStartButton=controlPanelButton("Insert at Start");
         insertStartButton.setDefaultButton(true);
         insertStartButton.setOnAction(e -> {
-            if (animCount > 0) return; // ignore while animation running
+            if (animCount > 0) return;
             String text = valueEnq.getText();
             if (text.isEmpty()) return;
             try {
                 int value = Integer.parseInt(text);
                 insertAtStart(value);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid value");
+                log("Invalid value");
             }
         });
 
@@ -195,7 +183,7 @@ public class LinearListVisualization {
                 int value = Integer.parseInt(text);
                 insertAtEnd(value);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid value");
+                log("Invalid value");
             }
         });
 
@@ -230,7 +218,7 @@ public class LinearListVisualization {
                 int index = Integer.parseInt(idx);
                 insertAtIndex(value, index);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid value or index");
+                log("Invalid value or index");
             }
         });
 
@@ -243,7 +231,7 @@ public class LinearListVisualization {
                 int index = Integer.parseInt(idx);
                 deleteAtIndex(index);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid index");
+                log("Invalid index");
             }
         });
 
@@ -266,7 +254,6 @@ public class LinearListVisualization {
         return button;
     }
 
-    // ---------- animation coordination ----------
     private void beginAnimation() {
         animCount++;
         if (controlPanel != null) controlPanel.setDisable(true);
@@ -277,14 +264,12 @@ public class LinearListVisualization {
         if (animCount == 0 && controlPanel != null) controlPanel.setDisable(false);
     }
 
-    // ---------------- helper: head binding/animation ----------------
-
     private void attachHeadToIndex(int idx) {
         if (idx < 0 || idx >= QUEUE_SIZE) return;
-        // remove any previous binding
+        //remove any previous binding
         detachHeadBinding();
 
-        // ensure node present so binding works
+        //ensure node present so binding works
         ensureNodePresent(idx);
 
         headLabel.setVisible(true);
@@ -325,34 +310,29 @@ public class LinearListVisualization {
         } catch (Exception ignored){}
     }
 
-    /**
-     * Animates the head label from its current displayed position to above nodeBoxes[index].
-     * This unbinds any previous attachment (so head keeps its current screen position as start)
-     * and after animation sets the head exactly above the destination node.
-     */
     private void animateHeadMoveToIndex(int index, Duration duration, Runnable onFinished) {
         if (index < 0 || index >= QUEUE_SIZE) {
             if (onFinished != null) onFinished.run();
             return;
         }
 
-        // ensure we have a concrete start position (if bound, unbind -> preserves current computed layout)
+        //ensure we have a concrete start position (if bound, unbind -> preserves current computed layout)
         detachHeadBinding();
 
-        // ensure destination node exists visually so we can compute target coords
+        //ensure destination node exists visually so we can compute target coords
         ensureNodePresent(index);
 
-        // compute target coords (use current layoutX/layoutY + translateX since nodes may be moving)
+        //compute target coords (use current layoutX/layoutY + translateX since nodes may be moving)
         double targetX = nodeBoxes[index].getLayoutX() + nodeBoxes[index].getTranslateX() + boxWidth / 2.0 - headLabel.getWidth() / 2.0;
         double targetY = nodeBoxes[index].getLayoutY() + nodeBoxes[index].getTranslateY() - 30.0;
 
-        // compute deltas from current screen layout position
+        //compute deltas from current screen layout position
         double startXNow = headLabel.getLayoutX();
         double startYNow = headLabel.getLayoutY();
         double dx = targetX - startXNow;
         double dy = targetY - startYNow;
 
-        // if dx/dy are tiny, directly place
+        //if dx/dy are tiny, directly place
         if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
             headLabel.setLayoutX(targetX);
             headLabel.setLayoutY(targetY);
@@ -362,13 +342,12 @@ public class LinearListVisualization {
             return;
         }
 
-        // animate using TranslateTransition (we'll finalize by setting layout to target and clearing translate)
+        //animate using TranslateTransition (we'll finalize by setting layout to target and clearing translate)
         TranslateTransition tt = new TranslateTransition(duration, headLabel);
         tt.setByX(dx);
         tt.setByY(dy);
         tt.setInterpolator(Interpolator.EASE_BOTH);
         tt.setOnFinished(ev -> {
-            // finalize exact placement
             headLabel.setLayoutX(targetX);
             headLabel.setLayoutY(targetY);
             headLabel.setTranslateX(0);
@@ -378,13 +357,10 @@ public class LinearListVisualization {
         tt.play();
     }
 
-    // ---------------- Linked List operations (visual + data) ----------------
-
     private boolean isFull() {
         return list.size() >= QUEUE_SIZE;
     }
 
-    // ensure NodeBox is added to pane and positioned (reset translate to avoid stale transforms)
     private void ensureNodePresent(int i) {
         if (i < 0 || i >= QUEUE_SIZE) return;
         if (!workArea.getChildren().contains(nodeBoxes[i])) {
@@ -395,13 +371,13 @@ public class LinearListVisualization {
             workArea.getChildren().add(nodeBoxes[i]);
             nodeBoxes[i].toFront();
         } else {
-            // if already present, ensure transforms are cleared before further animations
+            //if already present,ensure transforms are cleared before further animations
             nodeBoxes[i].setTranslateX(0);
             nodeBoxes[i].setTranslateY(0);
         }
     }
 
-    // remove all node visuals when list becomes empty
+    //remove all node visuals when list becomes empty
     private void removeAllNodeVisualsIfEmpty() {
         if (list.isEmpty()) {
             for (int i = 0; i < QUEUE_SIZE; i++) {
@@ -417,7 +393,6 @@ public class LinearListVisualization {
             arrows.clear();
             headIndex = -1;
 
-            // hide head
             detachHeadBinding();
             headLabel.setVisible(false);
         }
@@ -429,7 +404,6 @@ public class LinearListVisualization {
             return;
         }
 
-        // ========= CASE 1: EMPTY LIST =========
         if (list.size() == 0) {
             NodeBox temp = new NodeBox(value);
             double spawnX = startX + 0 * spacing;
@@ -445,8 +419,6 @@ public class LinearListVisualization {
             beginAnimation();
             drop.setOnFinished(e -> {
                 list.insertAtBeginning(value);
-
-                // ensure slot 0 exists and set its value
                 ensureNodePresent(0);
                 nodeBoxes[0].setLayoutX(startX);
                 nodeBoxes[0].setTranslateX(0);
@@ -457,7 +429,6 @@ public class LinearListVisualization {
 
                 headIndex = list.isEmpty() ? -1 : 0;
                 redrawArrows();
-                // head should show above the newly created node
                 headLabel.setVisible(true);
                 headLabel.setLayoutX(nodeBoxes[0].getLayoutX() + boxWidth/2.0 - headLabel.getWidth()/2.0);
                 headLabel.setLayoutY(nodeBoxes[0].getLayoutY() - 30);
@@ -470,14 +441,12 @@ public class LinearListVisualization {
             return;
         }
 
-        // ========= CASE 2: NON-EMPTY LIST =========
-        // ensure visuals exist for all nodes
         for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
 
-        // Attach head to the current first node so it moves "with" it while shifting
+        //Attach head to the current first node so it moves "with" it while shifting
         attachHeadToIndex(0);
 
-        // Shift visuals to the right for existing nodes (sequential as before)
+        //Shift visuals to the right for existing nodes (sequential as before)
         SequentialTransition shiftAll = new SequentialTransition();
         for (int i = list.size() - 1; i >= 0; i--) {
             NodeBox nb = nodeBoxes[i];
@@ -488,7 +457,7 @@ public class LinearListVisualization {
             shiftAll.getChildren().add(tt);
         }
 
-        // Create the new node box above the first slot (temporary)
+        //Create the new node box above the first slot (temporary)
         NodeBox newBox = new NodeBox(value);
         double spawnX = startX + 0 * spacing;
         double spawnY = startY - 160;
@@ -497,7 +466,7 @@ public class LinearListVisualization {
         workArea.getChildren().add(newBox);
         newBox.toFront();
 
-        // Drop new node into slot 0
+        //Drop new node into slot 0
         TranslateTransition drop = new TranslateTransition(Duration.seconds(0.25), newBox);
         drop.setByY(startY - spawnY);
 
@@ -509,10 +478,8 @@ public class LinearListVisualization {
 
         beginAnimation();
         full.setOnFinished(e -> {
-            // commit data structure change
             list.insertAtBeginning(value);
 
-            // update visuals by writing the new values into each slot
             for (int i = 0; i < list.size(); i++) {
                 ensureNodePresent(i);
                 NodeBox nb = nodeBoxes[i];
@@ -522,7 +489,6 @@ public class LinearListVisualization {
                 nb.setValue(list.get(i));
             }
 
-            // clean up any leftover slot visuals beyond current size
             for (int i = list.size(); i < QUEUE_SIZE; i++) {
                 if (workArea.getChildren().contains(nodeBoxes[i])) {
                     nodeBoxes[i].setValue("null");
@@ -530,12 +496,7 @@ public class LinearListVisualization {
                 }
             }
 
-            // remove temporary newBox
             workArea.getChildren().remove(newBox);
-
-            // Now head is still attached to the old first node (which moved right).
-            // Animate head from old-node position to above the newly inserted node at index 0.
-            // Detach binding and animate to index 0, then finalize.
             animateHeadMoveToIndex(0, Duration.seconds(0.18), () -> {
                 headIndex = 0;
                 redrawArrows();
@@ -555,7 +516,7 @@ public class LinearListVisualization {
 
         for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
 
-        int finalIndex = list.size(); // index where it will land
+        int finalIndex = list.size(); //index where it will land
         NodeBox newBox = new NodeBox(value);
         double spawnX = startX + finalIndex * spacing + spacing / 2.0;
         double spawnY = startY - 160;
@@ -609,7 +570,7 @@ public class LinearListVisualization {
 
         for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
 
-        // traverse visually then insert
+        //traverse visually then insert
         animateHeadTraversal(index, () -> {
             double spawnX = startX + index * spacing + spacing / 2.0;
             double spawnY = startY - 160;
@@ -671,7 +632,6 @@ public class LinearListVisualization {
             return;
         }
 
-        // If only one node, keep previous flow (remove then vanish, hide head)
         if (list.size() == 1) {
             int removed = list.deleteFromBeginning();
 
@@ -705,19 +665,16 @@ public class LinearListVisualization {
             vanish.play();
             return;
         }
-
-        // For size > 1: first animate head to second node, THEN delete first node (as you requested)
-        // Ensure nodes present
         for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
 
-        beginAnimation(); // disable controls during head move + subsequent delete animation
+        beginAnimation(); //disable controls during head move + subsequent delete animation
 
-        // animate head to node index 1
+        //animate head to node index 1
         animateHeadMoveToIndex(1, Duration.seconds(0.18), () -> {
-            // now proceed to delete the first node (we remove from model and play vanish+shift)
+            //now proceed to delete the first node (we remove from model and play vanish+shift)
             int removed = list.deleteFromBeginning();
 
-            // ensure visuals; target is current nodeBoxes[0]
+            //ensure visuals; target is current nodeBoxes[0]
             ensureNodePresent(0);
             NodeBox target = nodeBoxes[0];
 
@@ -734,7 +691,7 @@ public class LinearListVisualization {
             lift.setByY(-80);
             ParallelTransition vanish = new ParallelTransition(fade, lift);
 
-            // shift remaining nodes left (index 1..size -> 0..size-1)
+            //shift remaining nodes left (index 1..size -> 0..size-1)
             SequentialTransition shiftSeq = new SequentialTransition();
             for (int i = 1; i <= list.size(); i++) {
                 ensureNodePresent(i);
@@ -749,7 +706,6 @@ public class LinearListVisualization {
             vanish.setOnFinished(ev -> workArea.getChildren().remove(temp));
 
             shiftSeq.setOnFinished(ev -> {
-                // update visuals
                 for (int i = 0; i < list.size(); i++) {
                     ensureNodePresent(i);
                     NodeBox nb = nodeBoxes[i];
@@ -767,8 +723,6 @@ public class LinearListVisualization {
                 }
 
                 headIndex = list.isEmpty() ? -1 : 0;
-
-                // After removal and shifting, move head to new first node (index 0) smoothly
                 animateHeadMoveToIndex(0, Duration.seconds(0.12), () -> {
                     redrawArrows();
                     log(removed + " deleted from start");

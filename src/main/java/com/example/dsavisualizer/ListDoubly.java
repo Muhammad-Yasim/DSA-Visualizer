@@ -4,7 +4,6 @@ public class ListDoubly {
     private NodeListDoubly head;
     private int length = 0;
 
-    // ---------- INSERT AT END ----------
     public void insertAtEnd(int data) {
         NodeListDoubly newNode = new NodeListDoubly(data);
 
@@ -22,7 +21,6 @@ public class ListDoubly {
         length++;
     }
 
-    // ---------- INSERT AT BEGINNING ----------
     public void insertAtBeginning(int data) {
         NodeListDoubly newNode = new NodeListDoubly(data);
 
@@ -37,7 +35,6 @@ public class ListDoubly {
         length++;
     }
 
-    // ---------- DELETE FROM BEGINNING ----------
     public int deleteFromBeginning() {
         if (head == null) {
             System.out.println("List is empty.");
@@ -54,7 +51,6 @@ public class ListDoubly {
         return removed;
     }
 
-    // ---------- DELETE FROM END ----------
     public int deleteFromEnd() {
         if (head == null) {
             System.out.println("List is empty.");
@@ -68,7 +64,6 @@ public class ListDoubly {
             return removed;
         }
 
-        // otherwise traverse to last node
         NodeListDoubly current = head;
         while (current.next != null)
             current = current.next;
@@ -79,7 +74,6 @@ public class ListDoubly {
         return removed;
     }
 
-    // ---------- INSERT AT LOCATION ----------
     public void insertAtLocation(int data, int index) {
         if (index == 0) {
             insertAtBeginning(data);
@@ -108,7 +102,6 @@ public class ListDoubly {
         length++;
     }
 
-    // ---------- DELETE AT LOCATION ----------
     public int deleteAtLocation(int index) {
         if (head == null) {
             System.out.println("List is empty.");

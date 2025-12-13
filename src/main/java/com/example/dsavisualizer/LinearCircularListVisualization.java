@@ -4,7 +4,6 @@ import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -22,9 +21,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class DoublyCircularListVisualization {
+public class LinearCircularListVisualization {
 
-    private ListCircularDoubly list;
+    private ListCircularLinear list;
     private NodeBox[] nodeBoxes;
     private final int QUEUE_SIZE = 6;
 
@@ -47,7 +46,7 @@ public class DoublyCircularListVisualization {
     private DoubleBinding lastXBinding = null;
     private DoubleBinding lastYBinding = null;
 
-    public DoublyCircularListVisualization() {
+    public LinearCircularListVisualization() {
         createUI();
     }
 
@@ -82,7 +81,7 @@ public class DoublyCircularListVisualization {
         HBox header = new HBox();
         header.setPadding(new Insets(10, 10, 0, 15));
 
-        Label titleLabel = new Label("Doubly Circular Linked List Visualization");
+        Label titleLabel = new Label("Singly Circular Linked List Visualization");
         titleLabel.setStyle("-fx-font-size: 25px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         Region spacer = new Region();
@@ -108,7 +107,7 @@ public class DoublyCircularListVisualization {
         workArea.setPrefHeight(626);
         workArea.setPrefWidth(1204);
 
-        list = new ListCircularDoubly();
+        list = new ListCircularLinear();
         nodeBoxes = new NodeBox[QUEUE_SIZE];
 
         for (int i = 0; i < QUEUE_SIZE; i++) {
@@ -192,6 +191,7 @@ public class DoublyCircularListVisualization {
             }
         });
 
+        // NEW: Insert After (matches ListCircularDoubly.insertAfter(data, item))
         Button insertAfterButton = controlPanelButton("Insert After (target)");
         insertAfterButton.setOnAction(e -> {
             if (animCount > 0) return;
@@ -203,7 +203,7 @@ public class DoublyCircularListVisualization {
                 int target = Integer.parseInt(tgtTxt);
                 insertAfter(value, target);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid value or target");
+                log("Invalid value or target");
             }
         });
 
@@ -228,7 +228,7 @@ public class DoublyCircularListVisualization {
                 int item = Integer.parseInt(valTxt);
                 deleteByValue(item);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid value");
+                log("Invalid value");
             }
         });
 
@@ -256,7 +256,6 @@ public class DoublyCircularListVisualization {
         if (animCount == 0 && controlPanel != null) controlPanel.setDisable(false);
     }
 
-    // ---------- LAST label logic ----------
     private void attachLastToIndex(int idx) {
         if (idx < 0 || idx >= QUEUE_SIZE) return;
         detachLastBinding();
@@ -290,6 +289,46 @@ public class DoublyCircularListVisualization {
         try { lastLabel.layoutYProperty().unbind(); } catch (Exception ignored) {}
         lastXBinding = null;
         lastYBinding = null;
+    }
+
+    private void animateLastMoveToIndex(int index, Duration duration, Runnable onFinished) {
+        if (index < 0 || index >= QUEUE_SIZE) {
+            if (onFinished != null) onFinished.run();
+            return;
+        }
+
+        detachLastBinding();
+        ensureNodePresent(index);
+
+        double targetX = nodeBoxes[index].getLayoutX() + nodeBoxes[index].getTranslateX() + boxWidth / 2.0 - lastLabel.getWidth() / 2.0;
+        double targetY = nodeBoxes[index].getLayoutY() + nodeBoxes[index].getTranslateY() + boxHeight + 8;
+
+        double startXNow = lastLabel.getLayoutX();
+        double startYNow = lastLabel.getLayoutY();
+        double dx = targetX - startXNow;
+        double dy = targetY - startYNow;
+
+        if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
+            lastLabel.setLayoutX(targetX);
+            lastLabel.setLayoutY(targetY);
+            lastLabel.setTranslateX(0);
+            lastLabel.setTranslateY(0);
+            if (onFinished != null) onFinished.run();
+            return;
+        }
+
+        TranslateTransition tt = new TranslateTransition(duration, lastLabel);
+        tt.setByX(dx);
+        tt.setByY(dy);
+        tt.setInterpolator(Interpolator.EASE_BOTH);
+        tt.setOnFinished(ev -> {
+            lastLabel.setLayoutX(targetX);
+            lastLabel.setLayoutY(targetY);
+            lastLabel.setTranslateX(0);
+            lastLabel.setTranslateY(0);
+            if (onFinished != null) onFinished.run();
+        });
+        tt.play();
     }
 
     private void ensureNodePresent(int i) {
@@ -335,6 +374,7 @@ public class DoublyCircularListVisualization {
             log("List is FULL! Cannot insert " + value);
             return;
         }
+
         if (list.size() == 0) {
             NodeBox temp = new NodeBox(value);
             double spawnX = startX + 0 * spacing;
@@ -475,17 +515,17 @@ public class DoublyCircularListVisualization {
             return;
         }
 
+        //find index of targetValue
         int targetIdx = findIndexByValue(targetValue);
         if (targetIdx == -1) {
             log("Target value " + targetValue + " not found.");
             return;
         }
 
+        //ensure visuals for current nodes
         for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
 
-        // animate traversal to targetIdx
         animateHeadTraversal(targetIdx, () -> {
-            // visually insert: shift nodes right from end down to targetIdx+1
             SequentialTransition shiftSeq = new SequentialTransition();
             for (int i = list.size() - 1; i > targetIdx; i--) {
                 NodeBox nb = nodeBoxes[i];
@@ -496,7 +536,6 @@ public class DoublyCircularListVisualization {
 
             beginAnimation();
             shiftSeq.setOnFinished(ev -> {
-                //show the new node above the slot (targetIdx+1)
                 double spawnX = startX + (targetIdx + 1) * spacing;
                 double spawnY = startY - 160;
                 NodeBox newBox = new NodeBox(valueToInsert);
@@ -522,6 +561,7 @@ public class DoublyCircularListVisualization {
                         nb.setValue(list.get(i));
                     }
 
+                    // remove temp node visual
                     workArea.getChildren().remove(newBox);
 
                     lastIndex = list.size() - 1;
@@ -580,13 +620,11 @@ public class DoublyCircularListVisualization {
             return;
         }
 
-        //For safe shifting, capture old size before modifying the model
         final int oldSize = list.size();
 
         for (int i = 0; i < oldSize; i++) ensureNodePresent(i);
 
         beginAnimation();
-        //highlight head only (index 0) to avoid index confusion
         animateHeadTraversal(0, () -> {
             int removed = list.deleteFromBeginning();
 
@@ -606,7 +644,7 @@ public class DoublyCircularListVisualization {
             lift.setByY(-80);
             ParallelTransition vanish = new ParallelTransition(fade, lift);
 
-            //shift nodes left visually from 1 .. oldSize-1
+            // shift nodes left visually from 1 .. oldSize-1
             SequentialTransition shiftSeq = new SequentialTransition();
             for (int i = 1; i < oldSize; i++) {
                 ensureNodePresent(i);
@@ -700,20 +738,15 @@ public class DoublyCircularListVisualization {
             return;
         }
 
-        //find index of the node whose data == item
         int idx = findIndexByValue(item);
         if (idx == -1) {
             log("Value " + item + " not found.");
             return;
         }
-
-        //if it is start/first node, reuse deleteFromStart
         if (idx == 0) {
             deleteFromStart();
             return;
         }
-
-        //otherwise traversal to idx then animate deletion
         for (int i = 0; i < list.size(); i++) ensureNodePresent(i);
 
         animateHeadTraversal(idx, () -> {
@@ -725,7 +758,6 @@ public class DoublyCircularListVisualization {
                 return;
             }
 
-            //show vanish animation at idx slot
             ensureNodePresent(idx);
             NodeBox target = nodeBoxes[idx];
 
@@ -745,7 +777,6 @@ public class DoublyCircularListVisualization {
             beginAnimation();
             vanish.setOnFinished(ev -> workArea.getChildren().remove(temp));
 
-            // shift nodes left visually from idx+1 .. end
             SequentialTransition shiftSeq = new SequentialTransition();
             for (int i = idx; i < list.size(); i++) {
                 ensureNodePresent(i + 1);
@@ -831,7 +862,6 @@ public class DoublyCircularListVisualization {
         timeline.play();
     }
 
-
     private void redrawArrows() {
         for (Arrow a : arrows) {
             a.unbind();
@@ -843,27 +873,20 @@ public class DoublyCircularListVisualization {
 
         int n = list.size();
         if (n <= 0) {
-            // nothing
             return;
         }
 
-        // add arrows for adjacent nodes (0..n-2 -> i -> i+1)
         for (int i = 0; i < n - 1; i++) {
             Arrow fwd = drawArrow(nodeBoxes[i], nodeBoxes[i + 1], Color.WHITE, true);
-            Arrow back = drawArrow(nodeBoxes[i + 1], nodeBoxes[i], Color.YELLOW, false);
             arrows.add(fwd);
-            arrows.add(back);
         }
 
-        // circular connection from last -> head (n-1 -> 0)
         if (n >= 1) {
             NodeBox last = nodeBoxes[n - 1];
             NodeBox head = nodeBoxes[0];
 
             Arrow circularFwd = drawCircularArrow(last, head, Color.WHITE);
-            Arrow circularBack = drawCircularArrow(head, last, Color.YELLOW);
             arrows.add(circularFwd);
-            arrows.add(circularBack);
         }
 
         // make nodes and last label on top, but keep arrow heads above nodes
@@ -879,9 +902,9 @@ public class DoublyCircularListVisualization {
     private Arrow drawArrow(NodeBox from, NodeBox to, Color color, boolean isForward) {
 
         final double arrowSize = 10;
-        final double offsetY = 16;
+        final double offsetY = 1;
         final double whiteOffset = 1;   // move white head right
-        final double yellowOffset = 10; // keep yellow same
+        final double yellowOffset = 10;
 
         DoubleBinding startX = Bindings.createDoubleBinding(
                 () -> from.getLayoutX() + from.getTranslateX()
@@ -892,7 +915,7 @@ public class DoublyCircularListVisualization {
         DoubleBinding startY = Bindings.createDoubleBinding(
                 () -> from.getLayoutY() + from.getTranslateY()
                         + boxHeight / 2 + (isForward ? -offsetY : offsetY),
-                from.layoutYProperty(), from.translateYProperty()
+                from.layoutYProperty(), from.translateXProperty()
         );
 
         DoubleBinding endX = Bindings.createDoubleBinding(
@@ -904,7 +927,7 @@ public class DoublyCircularListVisualization {
         DoubleBinding endY = Bindings.createDoubleBinding(
                 () -> to.getLayoutY() + to.getTranslateY()
                         + boxHeight / 2 + (isForward ? -offsetY : offsetY),
-                to.layoutYProperty(), to.translateYProperty()
+                to.layoutYProperty(), to.translateXProperty()
         );
 
         Line line = new Line();
@@ -926,7 +949,6 @@ public class DoublyCircularListVisualization {
                 endX
         );
 
-
         head.layoutXProperty().bind(headX);
         head.layoutYProperty().bind(endY);
 
@@ -941,12 +963,9 @@ public class DoublyCircularListVisualization {
     private Arrow drawCircularArrow(NodeBox from, NodeBox to, Color color) {
 
         final double arrowSize = 10;
+        final double lift = 110;
 
-        //different heights so white/yellow arcs don’t overlap
-        final double liftHigh = 110;
-        final double liftLow  = 70;
-
-        //center Y of boxes
+        //enter Y of boxes
         DoubleBinding midYFrom = Bindings.createDoubleBinding(
                 () -> from.getLayoutY() + from.getTranslateY() + boxHeight / 2.0,
                 from.layoutYProperty(), from.translateYProperty());
@@ -964,23 +983,11 @@ public class DoublyCircularListVisualization {
                 () -> to.getLayoutX() + to.getTranslateX() + 6,
                 to.layoutXProperty(), to.translateXProperty());
 
-        //direction
-        BooleanBinding forward = Bindings.createBooleanBinding(
-                () -> (from.getLayoutX() + from.getTranslateX())
-                        < (to.getLayoutX() + to.getTranslateX()),
-                from.layoutXProperty(), from.translateXProperty(),
-                to.layoutXProperty(), to.translateXProperty());
-
-        //choose arc height
-        DoubleBinding lift = Bindings.createDoubleBinding(
-                () -> forward.get() ? liftHigh : liftLow,
-                forward);
-
         DoubleBinding syUp = Bindings.createDoubleBinding(
-                () -> midYFrom.get() - lift.get(), midYFrom, lift);
+                () -> midYFrom.get() - lift, midYFrom);
 
         DoubleBinding eyUp = Bindings.createDoubleBinding(
-                () -> midYTo.get() - lift.get(), midYTo, lift);
+                () -> midYTo.get() - lift, midYTo);
 
         //vertical from FROM node
         Line vLeft = new Line();
@@ -1010,7 +1017,6 @@ public class DoublyCircularListVisualization {
                 midYTo.subtract(boxHeight / 2 + 12)
         );
 
-
         vRight.setStroke(color);
         vRight.setStrokeWidth(2);
 
@@ -1021,7 +1027,7 @@ public class DoublyCircularListVisualization {
                 -arrowSize,  arrowSize / 2
         );
         head.setFill(color);
-        final double headXOffset = 5;
+        final double headXOffset = 5; // tweak: 4–10 looks good
 
         head.layoutXProperty().bind(
                 ex.add(headXOffset)
@@ -1033,15 +1039,14 @@ public class DoublyCircularListVisualization {
 
         //force exact vertical rotation
         head.rotateProperty().bind(
-                Bindings.when(forward).then(90.0).otherwise(90.0)
+                Bindings.createDoubleBinding(() -> 90.0)
         );
 
         workArea.getChildren().addAll(vLeft, hTop, vRight, head);
 
-        // store extra segments for cleanup
+        //store extra segments for cleanup
         head.setUserData(Arrays.asList(vLeft, vRight));
 
-        // return horizontal segment as main Arrow line
         return new Arrow(hTop, head, sx, syUp, ex, eyUp);
     }
 

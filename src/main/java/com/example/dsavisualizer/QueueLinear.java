@@ -11,12 +11,12 @@ public class QueueLinear {
     }
 
     public void enqueue(int value) {
-        if (rear == arr.length - 1)
+        if (rear==arr.length - 1)
             System.out.println("Queue is full");
         else {
-            arr[++rear] = value;
-            if (front == -1)
-                front = 0;
+            arr[++rear]=value;
+            if (front==-1)
+                front=0;
         }
     }
 
@@ -26,8 +26,8 @@ public class QueueLinear {
             return -1;
         }
         int value= arr[front++];
-        if(front > rear) { // Reset when queue becomes empty
-            front = rear = -1;
+        if(front>rear) {
+            front=rear=-1;
         }
         return value;
     }

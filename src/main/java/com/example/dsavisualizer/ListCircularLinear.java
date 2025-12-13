@@ -14,7 +14,7 @@ public class ListCircularLinear {
         temp.next=last;
     }
 
-    public void addAtBeginning(int data){
+    public void insertAtBeginning(int data){
         if(last==null) {   //It checks if list is already empty
             addToEmpty(data);
             return;
@@ -26,21 +26,7 @@ public class ListCircularLinear {
         last.next=temp;
     }
 
-    public void deleteAtBeginning() {
-        if (last == null){
-            System.out.println("List not existed");
-            return;
-        }
-        else if(last.next==last){
-            last=null;
-            return;
-        }
-
-        last.next=last.next.next;
-    }
-
-
-    public void addAtEnd(int data){
+    public void insertAtEnd(int data){
         if(last==null) {   //It checks if list is already empty
             addToEmpty(data);
             return;
@@ -53,30 +39,56 @@ public class ListCircularLinear {
         last=temp;
     }
 
-
-    public void deleteAtEnd(){
-        if (last == null){
+    public int deleteFromBeginning() {
+        if (last == null) {
             System.out.println("List not existed");
-            return;
-        }
-        else if(last.next==last){
-            last=null;
-            return;
+            return -1;
         }
 
-        NodeListLinear temp=last.next;
+        int deleted;
 
-        while(temp.next!=last){
-            temp=temp.next;
+        if (last.next == last) {
+            deleted = last.data;
+            last = null;
+            return deleted;
         }
 
-        temp.next=last.next;
-        last=temp;
-
+        deleted = last.next.data;      // head node
+        last.next = last.next.next;    // bypass head
+        return deleted;
     }
 
 
-    public void addAfter(int data,int item){    //Data is to be deleted,item is to be search for after which we have to delete
+    public int deleteFromEnd() {
+        if (last == null) {
+            System.out.println("List not existed");
+            return -1;
+        }
+
+        int deleted;
+
+        if (last.next == last) {
+            deleted = last.data;
+            last = null;
+            return deleted;
+        }
+
+        NodeListLinear temp = last.next;
+
+        while (temp.next != last) {
+            temp = temp.next;
+        }
+
+        deleted = last.data;
+        temp.next = last.next;
+        last = temp;
+
+        return deleted;
+    }
+
+
+
+    public void insertAfter(int data,int item){    //Data is to be added,item is to be search for after which we have to delete
         if(last==null)
             return;
 
@@ -98,35 +110,78 @@ public class ListCircularLinear {
         System.out.println("Node Not found");
     }
 
-
-    public void deleteByData(int item){
-        if (last == null){
+    public int deleteByData(int item) {
+        if (last == null) {
             System.out.println("List not existed");
-            return;
-        }
-        else if (last.next == last && last.data == item) {   //For single node case
-            last = null;
-            return;
+            return -1;
         }
 
-        NodeListLinear p=last;
+        if (last.next == last && last.data == item) {
+            int deleted = last.data;
+            last = null;
+            return deleted;
+        }
+
+        NodeListLinear p = last;
+
         do {
             if (p.next.data == item) {
 
-                if(p.next==last) {  //In case its last node itself
+                int deleted = p.next.data;
+
+                // if deleting last node
+                if (p.next == last) {
                     p.next = last.next;
-                    last=p;
-                }
-                else {
+                    last = p;
+                } else {
                     p.next = p.next.next;
                 }
-                return;
+                return deleted;
             }
 
-            p=p.next;
-        }while (p!=last.next);   //For checking if it really exists.If it looped and turned back to where it started,it means it is not found.
+            p = p.next;
+        } while (p != last);
 
         System.out.println("Node Not found");
+        return -1;
     }
+
+    public boolean isEmpty() {
+        return last == null;
+    }
+
+    public int get(int index) {
+        if (last == null)
+            throw new IndexOutOfBoundsException("List is empty");
+
+        int size = size();
+        if (index < 0 || index >= size)
+            throw new IndexOutOfBoundsException("Invalid index: " + index);
+
+        NodeListLinear temp = last.next; // head
+        int i = 0;
+
+        while (i < index) {
+            temp = temp.next;
+            i++;
+        }
+
+        return temp.data;
+    }
+
+    public int size() {
+        if (last == null)
+            return 0;
+
+        int count = 1;
+        NodeListLinear temp = last.next; // head
+
+        while (temp != last) {
+            count++;
+            temp = temp.next;
+        }
+        return count;
+    }
+
 
 }

@@ -13,17 +13,16 @@ import javafx.util.Duration;
 
 public class CircularQueueVisualization {
 
-    private QueueCircular queue;                // keeping your existing queue type
+    private QueueCircular queue;
     private NodeBox[] nodeBoxes;
-    private final int QUEUE_SIZE = 6;         // <--- 6 nodes as you requested
+    private final int QUEUE_SIZE = 6;
 
-    double w, h;
     private Pane workArea;
     private HBox root;
     private Label rearLabel, frontLabel;
     private TextArea console;
 
-    // visual tuning (feel free to tweak)
+    //circle-got from gpt
     private final double CENTER_X = 602;      // center of circle (workArea width ~1204/2)
     private final double CENTER_Y = 310;      // center Y
     private final double radius = 200;        // distance from center to node center
@@ -58,15 +57,6 @@ public class CircularQueueVisualization {
         TextArea consoleArea=createConsole();
 
         root.getChildren().setAll(header,workArea,consoleArea);
-
-        javafx.application.Platform.runLater(() -> {
-            w = workArea.getWidth();
-            h = workArea.getHeight();
-            // debug:
-            System.out.println("WORKAREA WIDTH = " + w);
-            System.out.println("WORKAREA HEIGHT = " + h);
-        });
-
         return root;
     }
 
@@ -111,7 +101,7 @@ public class CircularQueueVisualization {
         queue = new QueueCircular(6);
         nodeBoxes = new NodeBox[QUEUE_SIZE];
 
-        // Place nodes around a circle (index 0 at top, then clockwise)
+        //Place nodes around a circle
         for (int i = 0; i < QUEUE_SIZE; i++) {
             double angleDeg = -90 + i * (360.0 / QUEUE_SIZE); // -90 so index 0 is top
             double angleRad = Math.toRadians(angleDeg);
@@ -127,7 +117,6 @@ public class CircularQueueVisualization {
             workArea.getChildren().add(nodeBoxes[i]);
         }
 
-        // Create REAR label once (above the node)
         rearLabel = new Label("rear");
         rearLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
         // Initially place at node 0 position, adjust offset later as translate is used
@@ -136,7 +125,6 @@ public class CircularQueueVisualization {
         rearLabel.setVisible(false);
         workArea.getChildren().add(rearLabel);
 
-        // FRONT label (below the node)
         frontLabel = new Label("front");
         frontLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: white;");
         frontLabel.setLayoutX(nodeBoxes[0].getLayoutX());
@@ -194,20 +182,18 @@ public class CircularQueueVisualization {
                 int value = Integer.parseInt(text);
                 enqueue(value);
             } catch (NumberFormatException ex) {
-                System.out.println("Invalid value");
+                log("Invalid value");
             }
         });
 
         Button dequeueButton=controlPanelButton("- Dequeue");
         dequeueButton.setOnAction(e -> dequeue());
 
-
         root.getChildren().addAll(titleLabel,valueLabel,valueEnq,enqueueButton,dequeueButton);
         return root;
     }
 
     private void enqueue(int value) {
-
         if (queue.isFull()) {
             log("Queue is FULL! Cannot enqueue " + value);
             return;
@@ -220,19 +206,14 @@ public class CircularQueueVisualization {
 
         rearLabel.setVisible(true);
 
-        // FIRST ENQUEUE -> show front pointer at index 0 (circular)
         if (queue.size() == 1) {
             frontLabel.setVisible(true);
-            // place front label visually under node 0
             Point2D p0 = nodeCenter(0);
             frontLabel.setLayoutX((p0.getX() - BOX_W/2)+25);
             frontLabel.setLayoutY(p0.getY() + BOX_H/2 + 25);
         }
 
-        // Move rear pointer to new node (animated)
         moveRearPointerToIndex(rear);
-
-        // LOG HERE
         log(value + " is enqueued");
     }
 
@@ -252,21 +233,6 @@ public class CircularQueueVisualization {
         tt.setByY(targetY - currentY);
         tt.play();
     }
-/*
-    private void moveFrontPointerToIndex(int index) {
-        Point2D target = nodeCenter(index);
-
-        double currentX = frontLabel.getLayoutX() + frontLabel.getTranslateX();
-        double currentY = frontLabel.getLayoutY() + frontLabel.getTranslateY();
-
-        double targetX = target.getX() - BOX_W/2;
-        double targetY = target.getY() - BOX_H/2 + BOX_H + 10;
-
-        TranslateTransition tt = new TranslateTransition(Duration.seconds(0.45), frontLabel);
-        tt.setByX(targetX - currentX);
-        tt.setByY(targetY - currentY);
-        tt.play();
-    }*/
 
     private void moveFrontPointerToIndex(int index) {
 
@@ -315,13 +281,7 @@ public class CircularQueueVisualization {
         if (!queue.isEmpty()) {
             frontLabel.setVisible(true);
             moveFrontPointerToIndex(front);   // animate to new front
-        } /*else {
-            // queue became empty -> reset visuals
-            frontLabel.setVisible(false);
-            rearLabel.setVisible(false);
-            for (NodeBox box : nodeBoxes) box.setValue("null");
-            log("Queue is now EMPTY.");
-        }*/
+        }
      else {
         // Queue became empty -> reset visuals AND pointer positions
         for (NodeBox box : nodeBoxes) {

@@ -21,7 +21,6 @@ public class ListLinear {
         length++;
     }
 
-    // Insert at the beginning
     public void insertAtBeginning(int data) {
 
         NodeListLinear newNode = new NodeListLinear(data);
@@ -36,22 +35,19 @@ public class ListLinear {
         length++;
     }
 
-    // Delete from the beginning
     public int deleteFromBeginning() {
 
         if (head == null) {
             System.out.println("List is empty.");
-            return -1;   // or throw exception
+            return -1;
         }
 
-        int removedValue = head.data;   // save the data
-        head = head.next;               // move head
-        length--;                       // decrease size
-        return removedValue;            // return data
+        int removedValue = head.data;
+        head = head.next;
+        length--;
+        return removedValue;
     }
 
-
-    // Delete from end
     public int deleteFromEnd() {
 
         if (head == null) {
@@ -59,7 +55,6 @@ public class ListLinear {
             return -1;
         }
 
-        // Only one node
         if (head.next == null) {
             int removed = head.data;
             head = null;
@@ -67,15 +62,14 @@ public class ListLinear {
             return removed;
         }
 
-        // More than one node
         NodeListLinear current = head;
 
-        while (current.next.next != null) {   // go to second last
+        while (current.next.next != null) {
             current = current.next;
         }
 
-        int removed = current.next.data;      // data of last node
-        current.next = null;                  // remove last
+        int removed = current.next.data;
+        current.next = null;
         length--;
         return removed;
     }
@@ -118,7 +112,6 @@ public class ListLinear {
             return -1;
         }
 
-        // Delete from beginning
         if (index == 0) {
             return deleteFromBeginning();
         }
@@ -129,8 +122,8 @@ public class ListLinear {
             current = current.next;
         }
 
-        int removed = current.next.data;       // node to delete
-        current.next = current.next.next;      // bypass node
+        int removed = current.next.data;
+        current.next = current.next.next;
         length--;
 
         return removed;
