@@ -52,13 +52,17 @@ public class LandingPage {
         VBox buttons=new VBox(20);
         buttons.setAlignment(Pos.CENTER);
 
+        Button stackButton=menuButton("STACK");
+        stackButton.setOnAction(e->showStackVisualization());
+
         Button queueButton = menuButton("QUEUE");
         queueButton.setOnAction(e->showQueuePage());
 
         Button linkListButton=menuButton("LINKED LIST");
         linkListButton.setOnAction(e->showLinkedListPage());
 
-        buttons.getChildren().addAll(queueButton,linkListButton);
+
+        buttons.getChildren().addAll(stackButton,queueButton,linkListButton);
 
 
         root.getChildren().addAll(labels,buttons);
@@ -114,7 +118,6 @@ public class LandingPage {
     }
 
 
-
     protected static void showQueuePage() {
         QueuePage addQueuePage = new QueuePage();
         Scene scene = new Scene(addQueuePage.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
@@ -123,6 +126,12 @@ public class LandingPage {
 
     protected static void showLinkedListPage(){
         LinkedListPage addLinkedListPage=new LinkedListPage();
+        Scene scene = new Scene(addLinkedListPage.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
+        App.getPrimaryStage().setScene(scene);
+    }
+
+    protected static void showStackVisualization(){
+        StackVisualization addLinkedListPage=new StackVisualization();
         Scene scene = new Scene(addLinkedListPage.getRoot(), App.WINDOW_WIDTH, App.WINDOW_HEIGHT);
         App.getPrimaryStage().setScene(scene);
     }
