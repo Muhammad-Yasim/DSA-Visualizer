@@ -3,6 +3,7 @@ package com.example.dsavisualizer;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
 
 public class App extends Application {
 
@@ -16,6 +17,9 @@ public class App extends Application {
     public void start(Stage stage) {
 
         primaryStage=stage;
+
+        Image icon = new Image(getClass().getResourceAsStream("/images/icon.png"));
+        primaryStage.getIcons().add(icon);
 
         primaryStage.setTitle("DSA App");
         primaryStage.setResizable(false);
