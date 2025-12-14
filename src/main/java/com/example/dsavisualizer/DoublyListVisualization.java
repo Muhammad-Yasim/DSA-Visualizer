@@ -901,7 +901,7 @@ private void insertAtIndex(int value, int index) {
     private Arrow drawArrow(NodeBox from, NodeBox to, Color color, boolean isForward) {
         double padding = 6;
         double arrowSize = 10;
-        double offset = 6; //vertical offset for parallel arrows
+        double offset = 8; //vertical offset for parallel arrows
 
         //Adjust start/end X so arrow doesn't go inside node
         DoubleBinding startX = Bindings.createDoubleBinding(
@@ -914,7 +914,7 @@ private void insertAtIndex(int value, int index) {
         );
 
         DoubleBinding endX = Bindings.createDoubleBinding(
-                () -> to.getLayoutX() + to.getTranslateX() + (isForward ? -padding : boxWidth + padding),
+                () -> to.getLayoutX() + to.getTranslateX() + (isForward ? -padding+6 : boxWidth + padding-6),
                 to.layoutXProperty(), to.translateXProperty()
         );
         DoubleBinding endY = Bindings.createDoubleBinding(

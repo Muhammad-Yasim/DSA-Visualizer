@@ -291,46 +291,6 @@ public class LinearCircularListVisualization {
         lastYBinding = null;
     }
 
-    private void animateLastMoveToIndex(int index, Duration duration, Runnable onFinished) {
-        if (index < 0 || index >= QUEUE_SIZE) {
-            if (onFinished != null) onFinished.run();
-            return;
-        }
-
-        detachLastBinding();
-        ensureNodePresent(index);
-
-        double targetX = nodeBoxes[index].getLayoutX() + nodeBoxes[index].getTranslateX() + boxWidth / 2.0 - lastLabel.getWidth() / 2.0;
-        double targetY = nodeBoxes[index].getLayoutY() + nodeBoxes[index].getTranslateY() + boxHeight + 8;
-
-        double startXNow = lastLabel.getLayoutX();
-        double startYNow = lastLabel.getLayoutY();
-        double dx = targetX - startXNow;
-        double dy = targetY - startYNow;
-
-        if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
-            lastLabel.setLayoutX(targetX);
-            lastLabel.setLayoutY(targetY);
-            lastLabel.setTranslateX(0);
-            lastLabel.setTranslateY(0);
-            if (onFinished != null) onFinished.run();
-            return;
-        }
-
-        TranslateTransition tt = new TranslateTransition(duration, lastLabel);
-        tt.setByX(dx);
-        tt.setByY(dy);
-        tt.setInterpolator(Interpolator.EASE_BOTH);
-        tt.setOnFinished(ev -> {
-            lastLabel.setLayoutX(targetX);
-            lastLabel.setLayoutY(targetY);
-            lastLabel.setTranslateX(0);
-            lastLabel.setTranslateY(0);
-            if (onFinished != null) onFinished.run();
-        });
-        tt.play();
-    }
-
     private void ensureNodePresent(int i) {
         if (i < 0 || i >= QUEUE_SIZE) return;
         if (!workArea.getChildren().contains(nodeBoxes[i])) {

@@ -143,10 +143,7 @@ public class LinearQueueVisualization {
         int f = queue.frontIndex();
         int r = queue.rearIndex();
 
-        console.appendText(
-                msg +
-                        "\nFront=" + f + "   |   Rear=" + r + "\n\n"
-        );
+        console.appendText(msg + "\nFront=" + f + "   |   Rear=" + r + "\n\n");
     }
 
 

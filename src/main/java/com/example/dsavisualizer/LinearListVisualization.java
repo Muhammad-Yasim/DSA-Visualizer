@@ -268,7 +268,6 @@ public class LinearListVisualization {
         if (idx < 0 || idx >= QUEUE_SIZE) return;
         //remove any previous binding
         detachHeadBinding();
-
         //ensure node present so binding works
         ensureNodePresent(idx);
 
@@ -342,7 +341,6 @@ public class LinearListVisualization {
             return;
         }
 
-        //animate using TranslateTransition (we'll finalize by setting layout to target and clearing translate)
         TranslateTransition tt = new TranslateTransition(duration, headLabel);
         tt.setByX(dx);
         tt.setByY(dy);
@@ -960,7 +958,7 @@ public class LinearListVisualization {
         );
 
         DoubleBinding endX = Bindings.createDoubleBinding(
-                () -> to.getLayoutX() + to.getTranslateX() - padding,
+                () -> to.getLayoutX() + to.getTranslateX() - padding+8,   //arrow head position
                 to.layoutXProperty(), to.translateXProperty()
         );
         DoubleBinding endY = Bindings.createDoubleBinding(
@@ -976,9 +974,7 @@ public class LinearListVisualization {
         line.setStroke(Color.WHITE);
         line.setStrokeWidth(2);
 
-        Polygon head = new Polygon(0.0, 0.0,
-                -arrowSize, -arrowSize / 2.0,
-                -arrowSize, arrowSize / 2.0);
+        Polygon head = new Polygon(0.0, 0.0, -arrowSize, -arrowSize / 2.0,-arrowSize, arrowSize / 2.0);
         head.setFill(Color.WHITE);
         head.layoutXProperty().bind(endX);
         head.layoutYProperty().bind(endY);
