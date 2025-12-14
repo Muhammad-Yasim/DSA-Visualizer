@@ -1,0 +1,21 @@
+Copyright (c) 2025 Muhammad Yasim
+All rights reserved.
+
+This software and its source code are the exclusive intellectual property
+of Muhammad Yasim.
+
+Permission is granted to view this source code for educational and
+personal learning purposes only.
+
+You may NOT:
+- Use this software or any part of it for commercial purposes
+- Sell, sublicense, or distribute this software
+- Modify and redistribute this software
+- Use this software in a product, service, or startup
+- Claim this software or idea as your own
+
+Any unauthorized use, reproduction, or distribution of this software
+is strictly prohibited and may result in legal action.
+
+For licensing inquiries or commercial permissions, contact:
+[yasim6906@gmail.com]
